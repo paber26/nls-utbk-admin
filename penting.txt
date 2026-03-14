@@ -1,0 +1,14 @@
+15.235.197.232
+ubuntu
+2N|=9WSR}q8:
+
+ssh ubuntu@15.235.197.232
+
+
+ssh fxV8l7R79HIapErc@15.235.197.232
+F1DNPl3RQHIW5xpl
+
+lakukan composer update
+
+
+
