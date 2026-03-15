@@ -111,7 +111,13 @@
                     <RouterLink :to="`/peserta/detail/${peserta.id}`" class="text-orange-700 text-xs hover:underline">
                       Detail
                     </RouterLink>
-                    <a href="#" class="text-red-500 text-xs hover:underline">Nonaktifkan</a>
+                    <button
+                      v-if="peserta.status_profil !== 'Lengkap'"
+                      @click="deletePeserta(peserta.id)"
+                      class="text-red-500 text-xs hover:underline"
+                    >
+                      Hapus
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -244,6 +250,22 @@
               </button>
             </div>
           </div>
+          <div v-if="showConfirmPopup" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div class="bg-white w-[350px] rounded-xl p-6 text-center">
+              <p class="text-sm text-slate-700 mb-4">Apakah Anda yakin ingin menghapus peserta ini?</p>
+              <div class="flex justify-center gap-2">
+                <button @click="cancelDelete" class="px-4 py-2 border rounded-lg text-sm hover:bg-gray-100">
+                  Batal
+                </button>
+                <button
+                  @click="confirmDelete"
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -271,6 +293,9 @@ const perPage = ref(10)
 const showModal = ref(false)
 const showPopup = ref(false)
 const popupMessage = ref("")
+
+const showConfirmPopup = ref(false)
+const pesertaIdToDelete = ref(null)
 
 const sekolahOptions = ref([])
 
@@ -418,6 +443,33 @@ const submitPeserta = async () => {
   }
 }
 
+const deletePeserta = (id) => {
+  pesertaIdToDelete.value = id
+  showConfirmPopup.value = true
+}
+
+const confirmDelete = async () => {
+  try {
+    await api.delete(`/peserta/${pesertaIdToDelete.value}`)
+    popupMessage.value = "Peserta berhasil dihapus"
+    showPopup.value = true
+    fetchPeserta()
+  } catch (error) {
+    console.error("Gagal menghapus peserta:", error)
+    popupMessage.value = "Gagal menghapus peserta"
+    showPopup.value = true
+  } finally {
+    showConfirmPopup.value = false
+    pesertaIdToDelete.value = null
+  }
+}
+
+const cancelDelete = () => {
+  showConfirmPopup.value = false
+  pesertaIdToDelete.value = null
+}
+
+// Jumlah halaman pagination yang ditampilkan di UI (misal: 5 tombol halaman)
 const maxVisible = 5
 
 const startPage = computed(() => {

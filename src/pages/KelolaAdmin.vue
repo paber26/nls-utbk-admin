@@ -21,7 +21,13 @@
         <div class="px-6 py-8">
           <section class="bg-white rounded-xl border p-6">
             <div class="flex justify-between items-center mb-6">
-              <h3 class="font-semibold text-slate-800">Daftar Pengguna</h3>
+              <h3 class="font-semibold text-slate-800">Daftar Admin</h3>
+              <button
+                @click="showAddModal = true"
+                class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700"
+              >
+                Tambah Admin
+              </button>
             </div>
 
             <div class="overflow-x-auto">
@@ -35,7 +41,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="user in users" :key="user.id" class="border-t">
+                  <tr v-for="user in admins" :key="user.id" class="border-t">
                     <td class="px-4 py-3 font-medium">{{ user.name }}</td>
                     <td class="px-4 py-3">{{ user.email }}</td>
                     <td class="px-4 py-3 text-center">
@@ -58,26 +64,129 @@
             </div>
           </section>
         </div>
+
+        <!-- Add Admin Modal -->
+        <div v-if="showAddModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div class="bg-white w-[480px] rounded-xl p-6 relative">
+            <button @click="closeAddModal" class="absolute top-3 right-3 text-slate-500">✕</button>
+            <h2 class="text-lg font-semibold mb-4">Tambah Admin</h2>
+
+            <div class="space-y-3">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Cari nama atau email (minimal 3 karakter)"
+                class="w-full px-4 py-2 border rounded-lg text-sm"
+              />
+
+              <div v-if="searchQuery.length < 3" class="text-xs text-slate-500">
+                Ketik minimal 3 karakter untuk mencari.
+              </div>
+
+              <div v-if="searchLoading" class="text-xs text-slate-500">Mencari...</div>
+
+              <div v-if="searchResults.length" class="max-h-64 overflow-y-auto border rounded-lg">
+                <div
+                  v-for="result in searchResults"
+                  :key="result.id"
+                  class="flex items-center justify-between px-4 py-2 hover:bg-orange-50"
+                >
+                  <div>
+                    <div class="text-sm font-medium">{{ result.name }}</div>
+                    <div class="text-xs text-slate-600">{{ result.email }}</div>
+                  </div>
+                  <button
+                    @click="addAdmin(result)"
+                    class="px-3 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700"
+                  >
+                    Jadikan Admin
+                  </button>
+                </div>
+              </div>
+
+              <div
+                v-if="searchQuery.length >= 3 && !searchLoading && !searchResults.length"
+                class="text-xs text-slate-500"
+              >
+                Tidak ditemukan.
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </body>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, watch } from "vue"
 import Sidebar from "../components/layout/Sidebar.vue"
 import api from "@/services/api"
 
-const users = ref([])
+const admins = ref([])
+const showAddModal = ref(false)
+const searchQuery = ref("")
+const searchResults = ref([])
+const searchLoading = ref(false)
+let searchTimeout = null
 
-onMounted(async () => {
-  const res = await api.get("/users")
-  users.value = res.data
+const fetchAdmins = async () => {
+  try {
+    const res = await api.get("/users")
+    admins.value = (res.data ?? []).filter((u) => u.role === "admin")
+  } catch (err) {
+    console.error("Gagal mengambil admin:", err)
+  }
+}
+
+onMounted(() => {
+  fetchAdmins()
 })
 
 const updateRole = async (user) => {
-  await api.put(`/users/${user.id}/role`, {
-    role: user.role
-  })
+  await api.put(`/users/${user.id}/role`, { role: user.role })
+  if (user.role !== "admin") {
+    admins.value = admins.value.filter((u) => u.id !== user.id)
+  }
+}
+
+const closeAddModal = () => {
+  showAddModal.value = false
+  searchQuery.value = ""
+  searchResults.value = []
+  searchLoading.value = false
+  if (searchTimeout) clearTimeout(searchTimeout)
+}
+
+watch(searchQuery, (val) => {
+  searchResults.value = []
+  if (val.length < 3) return
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(searchUsers, 250)
+})
+
+const searchUsers = async () => {
+  const query = searchQuery.value.trim()
+  if (query.length < 3) return
+  searchLoading.value = true
+  try {
+    const res = await api.get("/users", { params: { search: query } })
+    searchResults.value = (res.data ?? []).filter((u) => u.role !== "admin")
+  } catch (err) {
+    console.error("Gagal mencari pengguna:", err)
+    searchResults.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const addAdmin = async (user) => {
+  try {
+    await api.put(`/users/${user.id}/role`, { role: "admin" })
+    await fetchAdmins()
+    closeAddModal()
+  } catch (err) {
+    console.error("Gagal menjadikan admin:", err)
+  }
 }
 </script>
