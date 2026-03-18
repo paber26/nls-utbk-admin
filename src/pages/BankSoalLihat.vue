@@ -7,8 +7,8 @@
 
       <div class="bg-white border rounded-xl p-6 space-y-6 w-full">
         <div>
-          <p class="text-sm text-gray-500">Subtes / Kategori</p>
-          <p class="font-medium">{{ mapelNama }}</p>
+          <p class="text-sm text-gray-500">Komponen</p>
+          <p class="font-medium">{{ komponenNama }}</p>
         </div>
 
         <div>
@@ -114,7 +114,7 @@ const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 
-const mapelNama = ref("")
+const komponenNama = ref("")
 const tipeSoal = ref("")
 const pertanyaan = ref("")
 const pembahasan = ref("")
@@ -138,7 +138,7 @@ onMounted(async () => {
   const res = await api.get(`/banksoal/${id}`)
   const data = res.data
 
-  mapelNama.value = data.mapel_nama || data.mapel || "-"
+  komponenNama.value = data.komponen || data.komponen_nama || "-"
   tipeSoal.value = data.tipe
   pertanyaan.value = data.pertanyaan
   pembahasan.value = data.pembahasan

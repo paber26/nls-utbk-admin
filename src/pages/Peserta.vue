@@ -12,7 +12,14 @@
 
         <!-- Content -->
         <div class="px-6 py-6">
-          <div class="flex justify-end mb-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+            <div class="text-sm text-slate-600">
+              <span class="font-medium">Lengkap:</span>
+              {{ countLengkap }}
+              <span class="mx-2">•</span>
+              <span class="font-medium">Belum Lengkap:</span>
+              {{ countBelum }}
+            </div>
             <button
               @click="showModal = true"
               class="px-5 py-2.5 bg-orange-600 text-white text-sm font-semibold rounded-lg shadow-md hover:bg-orange-700 transition"
@@ -315,6 +322,23 @@ const filteredSekolah = computed(() => {
   return sekolahOptions.value.filter((s) => s.nama.toLowerCase().includes(sekolahSearch.value.toLowerCase()))
 })
 
+const countLengkap = ref(0)
+const countBelum = ref(0)
+
+const fetchStatusCounts = async () => {
+  try {
+    const [resLengkap, resBelum] = await Promise.all([
+      api.get("/peserta", { params: { status: "Lengkap", per_page: 1 } }),
+      api.get("/peserta", { params: { status: "Belum Lengkap", per_page: 1 } })
+    ])
+
+    countLengkap.value = resLengkap.data.total ?? 0
+    countBelum.value = resBelum.data.total ?? 0
+  } catch (err) {
+    console.error("Gagal mengambil statistik status peserta:", err)
+  }
+}
+
 const selectSekolah = (sekolah) => {
   form.value.sekolah_id = sekolah.id
   sekolahSearch.value = sekolah.nama
@@ -426,6 +450,7 @@ const submitPeserta = async () => {
 
     closeModal()
     fetchPeserta()
+    await fetchStatusCounts()
   } catch (err) {
     console.error("Gagal menambahkan peserta:", err)
 
@@ -454,6 +479,7 @@ const confirmDelete = async () => {
     popupMessage.value = "Peserta berhasil dihapus"
     showPopup.value = true
     fetchPeserta()
+    await fetchStatusCounts()
   } catch (error) {
     console.error("Gagal menghapus peserta:", error)
     popupMessage.value = "Gagal menghapus peserta"
@@ -502,5 +528,6 @@ const handlePerPageChange = () => {
 onMounted(() => {
   fetchPeserta()
   fetchSekolah()
+  fetchStatusCounts()
 })
 </script>

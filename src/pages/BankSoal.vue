@@ -9,7 +9,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Manajemen Paket Soal</h1>
-            <p class="text-sm text-slate-500">Kelola bank soal berdasarkan subtes dan kategori tryout UTBK/SNBT</p>
+            <p class="text-sm text-slate-500">Kelola bank soal berdasarkan komponen dan kategori tryout UTBK/SNBT</p>
           </div>
 
           <RouterLink
@@ -23,13 +23,13 @@
         <div class="px-6 py-6">
           <section class="bg-white rounded-xl border p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
             <select
-              v-model="selectedMapel"
+              v-model="selectedKomponen"
               @change="fetchBankSoal"
               class="px-4 py-2 border rounded-xl text-sm w-full md:w-64 bg-white"
             >
-              <option value="">Semua Subtes</option>
-              <option v-for="mapel in mapelList" :key="mapel.id || mapel.nama" :value="mapel.nama || mapel">
-                {{ mapel.nama || mapel }}
+              <option value="">Semua Komponen</option>
+              <option v-for="komponen in komponenList" :key="komponen" :value="komponen">
+                {{ komponen }}
               </option>
             </select>
 
@@ -62,9 +62,9 @@
             <table :key="currentPage" class="w-full text-sm">
               <thead class="bg-slate-100">
                 <tr>
-                  <th class="px-4 py-3 text-left">Subtes</th>
+                  <th class="px-4 py-3 text-center">No.</th>
+                  <th class="px-4 py-3 text-left">Komponen</th>
                   <th class="px-4 py-3 text-left">Soal</th>
-                  <th class="px-4 py-3 text-center">Penginput</th>
                   <th class="px-4 py-3 text-center">Jumlah Terpakai</th>
                   <th class="px-4 py-3 text-center">Aksi</th>
                 </tr>
@@ -76,16 +76,20 @@
                 </tr>
                 <tr v-else-if="bankSoal.length === 0">
                   <td colspan="5" class="px-4 py-8 text-center text-slate-400">
-                    Belum ada soal pada subtes ini. Coba ubah filter atau refresh data.
+                    Belum ada soal pada komponen ini. Coba ubah filter atau refresh data.
                   </td>
                 </tr>
 
-                <tr v-for="item in bankSoal" :key="item.id" class="border-t">
-                  <td class="px-4 py-3">{{ item.mapel || item.mapel_nama || "-" }}</td>
-                  <td class="px-4 py-3 font-medium">
+                <tr v-for="(item, index) in bankSoal" :key="item.id" class="border-t">
+                  <td class="px-4 py-3 text-center">{{ (currentPage - 1) * perPage + index + 1 }}</td>
+                  <td class="px-4 py-3">
+                    {{ item.komponen || item.komponen_nama || "-" }}
+                    <br />
+                    <small class="text-slate-500">{{ item.pembuat }}</small>
+                  </td>
+                  <td class="px-4 py-3 font-medium min-w-96">
                     <div v-html="formatSoal(item.pertanyaan)"></div>
                   </td>
-                  <td class="px-4 py-3 text-center">{{ item.pembuat }}</td>
                   <td class="px-4 py-3 text-center">{{ item.jumlah_terpakai }}</td>
                   <td class="px-4 py-3 text-center space-x-2">
                     <RouterLink :to="`/banksoal/lihat/${item.id}`" class="text-orange-700 text-xs hover:underline">
@@ -122,7 +126,7 @@
           </div>
 
           <p class="text-xs text-slate-500 mt-4">
-            *Setiap paket soal terhubung ke satu subtes/kategori dan dapat dipakai pada satu atau beberapa batch tryout.
+            *Setiap paket soal terhubung ke satu komponen dan dapat dipakai pada satu atau beberapa batch tryout.
           </p>
         </div>
       </main>
@@ -140,9 +144,9 @@ import Sidebar from "../components/layout/Sidebar.vue"
 
 const bankSoal = ref([])
 const loading = ref(true)
-const mapelList = ref([])
+const komponenList = ref([])
 
-const selectedMapel = ref("")
+const selectedKomponen = ref("")
 const selectedStatus = ref("")
 
 const currentPage = ref(1)
@@ -184,13 +188,14 @@ const fetchBankSoal = async () => {
     loading.value = true
 
     const params = {}
-    if (selectedMapel.value) params.mapel = selectedMapel.value
+    if (selectedKomponen.value) params.komponen = selectedKomponen.value
     if (selectedStatus.value) params.status = selectedStatus.value
 
     params.page = currentPage.value
     params.per_page = perPage.value
 
     const res = await api.get("/banksoal", { params })
+    console.log("Respon API Bank Soal:", res.data)
 
     // Support array, normal pagination, or nested resource pagination
     if (Array.isArray(res.data)) {
@@ -213,6 +218,10 @@ const fetchBankSoal = async () => {
       lastPage.value = 1
     }
 
+    // Extract unique komponen from the bank soal data
+    const uniqueKomponen = [...new Set(bankSoal.value.map((item) => item.komponen).filter(Boolean))]
+    komponenList.value = uniqueKomponen
+
     await nextTick()
   } catch (error) {
     console.error("Gagal mengambil bank soal:", error)
@@ -222,14 +231,8 @@ const fetchBankSoal = async () => {
   }
 }
 
-const fetchMapel = async () => {
-  try {
-    const res = await api.get("/mapel")
-    mapelList.value = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : []
-  } catch (error) {
-    console.error("Gagal mengambil daftar subtes:", error)
-    mapelList.value = []
-  }
+const fetchKomponen = async () => {
+  // Komponen sekarang diambil dari API /banksoal
 }
 
 const goToPage = (page) => {
@@ -244,7 +247,6 @@ const handlePerPageChange = () => {
 }
 
 onMounted(() => {
-  fetchMapel()
   fetchBankSoal()
 })
 </script>

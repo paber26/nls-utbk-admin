@@ -113,6 +113,19 @@
             </div>
           </div>
         </div>
+
+        <!-- Popup Notifikasi -->
+        <div v-if="showPopup" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div class="bg-white w-[350px] rounded-xl p-6 text-center">
+            <p class="text-sm text-slate-700 mb-4">{{ popupMessage }}</p>
+            <button
+              @click="showPopup = false"
+              class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
       </main>
     </div>
   </body>
@@ -128,6 +141,8 @@ const showAddModal = ref(false)
 const searchQuery = ref("")
 const searchResults = ref([])
 const searchLoading = ref(false)
+const showPopup = ref(false)
+const popupMessage = ref("")
 let searchTimeout = null
 
 const fetchAdmins = async () => {
@@ -144,9 +159,19 @@ onMounted(() => {
 })
 
 const updateRole = async (user) => {
-  await api.put(`/users/${user.id}/role`, { role: user.role })
-  if (user.role !== "admin") {
-    admins.value = admins.value.filter((u) => u.id !== user.id)
+  try {
+    await api.put(`/users/${user.id}/role`, { role: user.role })
+    if (user.role !== "admin") {
+      admins.value = admins.value.filter((u) => u.id !== user.id)
+      popupMessage.value = "Role berhasil diubah ke Peserta"
+    } else {
+      popupMessage.value = "Role berhasil diubah ke Admin"
+    }
+    showPopup.value = true
+  } catch (err) {
+    console.error("Gagal mengubah role:", err)
+    popupMessage.value = "Gagal mengubah role"
+    showPopup.value = true
   }
 }
 
@@ -185,8 +210,12 @@ const addAdmin = async (user) => {
     await api.put(`/users/${user.id}/role`, { role: "admin" })
     await fetchAdmins()
     closeAddModal()
+    popupMessage.value = "Pengguna berhasil dijadikan admin"
+    showPopup.value = true
   } catch (err) {
     console.error("Gagal menjadikan admin:", err)
+    popupMessage.value = "Gagal menjadikan admin"
+    showPopup.value = true
   }
 }
 </script>

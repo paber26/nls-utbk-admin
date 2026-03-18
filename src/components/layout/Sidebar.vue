@@ -89,10 +89,6 @@
       </RouterLink>
     </nav>
 
-    <div class="mx-3 mb-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-xs text-[#c5dbdc]/80">
-      Fokus panel ini: TPS, Literasi Bahasa Indonesia, Literasi Bahasa Inggris, dan Penalaran Matematika.
-    </div>
-
     <div class="px-3 py-4 border-t border-white/10">
       <button
         type="button"

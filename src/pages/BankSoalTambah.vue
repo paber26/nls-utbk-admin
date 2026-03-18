@@ -14,14 +14,24 @@
         <div class="px-6 py-6 w-full">
           <form class="bg-white border rounded-xl p-6 space-y-4 w-full" @submit.prevent="submitSoal">
             <div>
-              <label class="block text-sm font-medium mb-1">Subtes / Kategori</label>
-              <select v-model="mapelId" class="w-full px-4 py-2 border rounded-lg text-sm">
-                <option value="">Pilih Subtes</option>
+              <label class="block text-sm font-medium mb-1">Komponen</label>
+              <select v-model="komponenId" class="w-full px-4 py-2 border rounded-lg text-sm">
+                <option value="">Pilih Komponen</option>
 
-                <option v-for="mapel in mapelList" :key="mapel.id" :value="mapel.id">
-                  {{ mapel.nama }} ({{ mapel.tingkat }})
+                <option v-for="komponen in komponenList" :key="komponen.id" :value="komponen.id">
+                  {{ komponen.komponen_nama || komponen.nama_komponen }} ({{ komponen.mata_uji }})
                 </option>
               </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">Jenis Materi</label>
+              <input
+                v-model="jenisMateri"
+                type="text"
+                class="w-full px-4 py-2 border rounded-lg text-sm"
+                placeholder="Contoh: Kemampuan Verbal, Matematika Dasar"
+              />
             </div>
 
             <div>
@@ -335,8 +345,9 @@ const setJawabanBenar = (index) => {
   })
 }
 
-const mapelList = ref([])
-const mapelId = ref("")
+const komponenList = ref([])
+const komponenId = ref("")
+const jenisMateri = ref("")
 const pertanyaan = ref("")
 const pembahasan = ref("")
 const loading = ref(false)
@@ -355,10 +366,11 @@ const closePopup = () => {
 
 onMounted(async () => {
   try {
-    const res = await api.get("/mapel")
-    mapelList.value = res.data
+    const res = await api.get("/komponen")
+    console.log("Komponen:", res.data)
+    komponenList.value = res.data
   } catch (err) {
-    console.error("Gagal load mapel", err)
+    console.error("Gagal load komponen", err)
   }
 
   // 🔑 load draft soal
@@ -369,7 +381,8 @@ onMounted(async () => {
   if (draftSoal.value.length > 0) {
     const last = draftSoal.value[draftSoal.value.length - 1]
 
-    mapelId.value = last.mapel_id || ""
+    komponenId.value = last.komponen_id || ""
+    jenisMateri.value = last.jenis_materi || ""
     tipeSoal.value = last.tipe || "pg"
     pertanyaan.value = last.pertanyaan || ""
     pembahasan.value = last.pembahasan || ""
@@ -390,8 +403,8 @@ onMounted(async () => {
 })
 
 const submitSoal = async () => {
-  if (!mapelId.value) {
-    openPopup("Subtes wajib dipilih")
+  if (!komponenId.value) {
+    openPopup("Komponen wajib dipilih")
     return
   }
 
@@ -454,7 +467,8 @@ const submitSoal = async () => {
 
   try {
     const payload = {
-      mapel_id: mapelId.value,
+      komponen_id: komponenId.value,
+      jenis_materi: jenisMateri.value,
       tipe: tipeSoal.value,
       pertanyaan: pertanyaan.value,
       pembahasan: pembahasan.value,
@@ -468,6 +482,7 @@ const submitSoal = async () => {
 
     draftSoal.value.push({
       ...payload,
+      komponen_id: komponenId.value,
       created_at: new Date().toISOString()
     })
 

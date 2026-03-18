@@ -6,8 +6,8 @@
     </div>
   </div>
 
-  <!-- <Login v-else-if="!isAuthenticated" />
-  <Isiformawal v-else-if="!profileComplete" /> -->
+  <Login v-else-if="!isAuthenticated" />
+  <Isiformawal v-else-if="!profileComplete" />
   <RouterView v-else />
 </template>
 

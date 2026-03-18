@@ -7,11 +7,11 @@
 
       <form class="bg-white border rounded-xl p-6 space-y-4 w-full" @submit.prevent="submitEdit">
         <div>
-          <label class="block text-sm font-medium mb-1">Subtes / Kategori</label>
-          <select v-model="mapelId" class="w-full px-4 py-2 border rounded-lg">
-            <option value="">Pilih Subtes</option>
-            <option v-for="m in mapelList" :key="m.id" :value="m.id">
-              {{ m.nama }}
+          <label class="block text-sm font-medium mb-1">Komponen</label>
+          <select v-model="komponenId" class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Pilih Komponen</option>
+            <option v-for="k in komponenList" :key="k.id" :value="k.id">
+              {{ k.komponen_nama || k.nama_komponen }} ({{ k.mata_uji }})
             </option>
           </select>
         </div>
@@ -170,7 +170,7 @@ import {
   ImageResize,
   ImageUpload
 } from "ckeditor5"
-import { ref, onMounted, nextTick } from "vue"
+import { ref, onMounted, onUnmounted, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 import Sidebar from "@/components/layout/Sidebar.vue"
@@ -179,8 +179,8 @@ const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 
-const mapelList = ref([])
-const mapelId = ref("")
+const komponenList = ref([])
+const komponenId = ref("")
 const tipeSoal = ref("pg")
 const pertanyaan = ref("")
 const pembahasan = ref("")
@@ -199,6 +199,11 @@ const showSuccessPopup = ref(false)
 const successMessage = ref("")
 const showErrorPopup = ref(false)
 const errorMessage = ref("")
+
+let isMounted = true
+onUnmounted(() => {
+  isMounted = false
+})
 
 const editor = ClassicEditor
 
@@ -297,21 +302,24 @@ const hapusOpsi = (index) => {
 }
 
 onMounted(async () => {
-  // load mapel
-  const mapelRes = await api.get("/mapel")
-  mapelList.value = mapelRes.data
+  // load komponen
+  const komponenRes = await api.get("/komponen")
+  if (!isMounted) return
+  komponenList.value = komponenRes.data
 
   // load soal
   const res = await api.get(`/banksoal/${id}`)
+  if (!isMounted) return
   const data = res.data
+  console.log("Data soal yang dimuat:", data)
 
-  mapelId.value = data.mapel_id
-  tipeSoal.value = data.tipe
-  pertanyaan.value = data.pertanyaan
-  pembahasan.value = data.pembahasan
+  komponenId.value = data.komponen_id ?? ""
+  tipeSoal.value = data.tipe ?? "pg"
+  pertanyaan.value = data.pertanyaan ?? ""
+  pembahasan.value = data.pembahasan ?? ""
 
   if (data.tipe === "isian") {
-    jawabanIsian.value = data.jawaban
+    jawabanIsian.value = data.jawaban ?? ""
     opsiJawaban.value = []
     pernyataanKompleks.value = []
   } else if (data.tipe === "pg" || data.tipe === "pg_majemuk") {
@@ -339,8 +347,8 @@ onMounted(async () => {
 
 const submitEdit = async () => {
   // === VALIDASI ===
-  if (!mapelId.value) {
-    errorMessage.value = "Subtes wajib dipilih"
+  if (!komponenId.value) {
+    errorMessage.value = "Komponen wajib dipilih"
     showErrorPopup.value = true
     return
   }
@@ -407,7 +415,7 @@ const submitEdit = async () => {
   loading.value = true
 
   const payload = {
-    mapel_id: mapelId.value,
+    komponen_id: komponenId.value,
     tipe: tipeSoal.value,
     pertanyaan: pertanyaan.value,
     pembahasan: pembahasan.value,
@@ -417,6 +425,7 @@ const submitEdit = async () => {
   }
 
   try {
+    console.log("Payload yang dikirim:", payload)
     const res = await api.put(`/banksoal/${id}`, payload)
 
     successMessage.value = res?.data?.message || "Soal berhasil diperbarui"

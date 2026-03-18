@@ -39,16 +39,38 @@
                 </div>
               </div>
 
-              <div>
-                <label class="text-sm text-slate-500">Subtes / Kategori Soal</label>
-                <select class="w-full mt-1 px-4 py-2 border rounded-lg" v-model="form.mapel_id">
-                  <option value="">Pilih Subtes</option>
-                  <option v-for="mapel in mapels" :key="mapel.id" :value="mapel.id">
-                    {{ mapel.nama }}
-                  </option>
-                </select>
-                <p v-if="errors.mapel_id" class="text-xs text-red-500 mt-1">
-                  {{ errors.mapel_id }}
+              <div class="md:col-span-2">
+                <label class="text-sm text-slate-500 mb-2 block">
+                  Komponen <span class="text-xs text-slate-400 font-normal ml-1">(Pilih sesuai urutan pengerjaan)</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div
+                    v-for="komponen in komponenList"
+                    :key="komponen.id"
+                    class="flex items-start gap-3 border p-3 rounded-lg transition-colors"
+                    :class="form.komponen_id.includes(komponen.id) ? 'border-orange-500 bg-orange-50' : 'bg-white border-slate-200 hover:bg-slate-50'"
+                  >
+                    <input
+                      type="checkbox"
+                      :id="'komponen-' + komponen.id"
+                      :value="komponen.id"
+                      v-model="form.komponen_id"
+                      class="mt-1 w-4 h-4 text-orange-600 rounded focus:ring-orange-500 cursor-pointer"
+                    />
+                    <label :for="'komponen-' + komponen.id" class="text-sm text-slate-700 cursor-pointer flex-1">
+                      <span class="font-medium block mb-1">{{ komponen.komponen_nama || komponen.nama_komponen }}</span>
+                      <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block">{{ komponen.mata_uji }}</span>
+                    </label>
+                    <div v-if="form.komponen_id.includes(komponen.id)" class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
+                      {{ form.komponen_id.indexOf(komponen.id) + 1 }}
+                    </div>
+                  </div>
+                </div>
+                <p v-if="errors.komponen_id" class="text-xs text-red-500 mt-1">
+                  {{ errors.komponen_id }}
+                </p>
+                <p class="text-xs text-slate-500 mt-2">
+                  * Angka di atas menunjukkan urutan pengerjaan komponen saat tryout berlangsung.
                 </p>
               </div>
 
@@ -119,7 +141,7 @@ const router = useRouter()
 
 const form = ref({
   paket: "",
-  mapel_id: "",
+  komponen_id: [],
   durasi_menit: "",
   mulai: "",
   selesai: "",
@@ -128,14 +150,14 @@ const form = ref({
 
 const errors = ref({})
 
-const mapels = ref([])
+const komponenList = ref([])
 
-const fetchMapel = async () => {
+const fetchKomponen = async () => {
   try {
-    const res = await api.get("/mapel")
-    mapels.value = res.data.data || res.data
+    const res = await api.get("/komponen")
+    komponenList.value = res.data.data || res.data
   } catch (err) {
-    console.error("Gagal mengambil data mapel:", err)
+    console.error("Gagal mengambil data komponen:", err)
   }
 }
 
@@ -156,7 +178,7 @@ const loadDraftOrApi = () => {
 
 onMounted(() => {
   loadDraftOrApi()
-  fetchMapel()
+  fetchKomponen()
 })
 
 const validateForm = () => {
@@ -166,8 +188,8 @@ const validateForm = () => {
     errors.value.paket = "Nama batch minimal 3 karakter"
   }
 
-  if (!form.value.mapel_id) {
-    errors.value.mapel_id = "Subtes wajib dipilih"
+  if (!form.value.komponen_id || form.value.komponen_id.length === 0) {
+    errors.value.komponen_id = "Minimal satu komponen wajib dipilih"
   }
 
   if (!form.value.durasi_menit || form.value.durasi_menit <= 0) {
