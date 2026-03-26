@@ -27,16 +27,56 @@
       </section>
 
       <section v-if="ringkasanKomponen.length > 0" class="bg-white rounded-xl border p-6">
-        <h2 class="font-medium mb-4">Ringkasan Komponen Soal</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="font-medium">Ringkasan Komponen Soal</h2>
+          <button v-if="selectedKomponen" @click="resetFilter" class="text-xs text-blue-600 hover:underline font-medium">
+            Reset Filter
+          </button>
+        </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div
+          <button
             v-for="(ringkasan, idx) in ringkasanKomponen"
             :key="idx"
-            class="p-4 border rounded-xl flex flex-col items-center justify-center bg-slate-50 relative"
+            type="button"
+            @click="toggleFilterKomponen(ringkasan.nama.trim())"
+            :class="[
+              'p-4 border rounded-xl flex flex-col items-center justify-center transition relative',
+              isRingkasanSelected(ringkasan.nama)
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                : 'bg-slate-50 hover:bg-slate-100'
+            ]"
           >
-            <span class="text-3xl font-bold text-blue-600 mb-1">{{ ringkasan.jumlah }}</span>
-            <span class="text-xs text-slate-500 text-center font-medium">{{ ringkasan.nama }}</span>
-          </div>
+            <span
+              :class="['text-3xl font-bold mb-1', isRingkasanSelected(ringkasan.nama) ? 'text-white' : 'text-blue-600']"
+            >
+              {{ ringkasan.jumlah }}
+            </span>
+            <span
+              :class="[
+                'text-xs text-center font-medium',
+                isRingkasanSelected(ringkasan.nama) ? 'text-blue-100' : 'text-slate-500'
+              ]"
+            >
+              {{ ringkasan.nama }}
+            </span>
+            <span
+              :class="[
+                'text-[10px] mt-1 font-medium px-2 py-0.5 rounded-full border shadow-sm',
+                isRingkasanSelected(ringkasan.nama)
+                  ? 'bg-blue-500 border-blue-400 text-white'
+                  : 'bg-white text-slate-400 border-slate-100'
+              ]"
+            >
+              {{ ringkasan.durasi }} Menit
+            </span>
+
+            <span
+              v-if="isRingkasanSelected(ringkasan.nama)"
+              class="absolute top-2 right-2 text-[10px] bg-white text-blue-600 px-2 py-0.5 rounded-full font-bold shadow-sm"
+            >
+              ✓
+            </span>
+          </button>
         </div>
       </section>
 
@@ -56,28 +96,47 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="soalTryout.length === 0">
-              <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada soal pada batch ini</td>
+            <tr v-if="filteredSoalTryout.length === 0">
+              <td colspan="5" class="px-3 py-4 text-center text-slate-400">{{ emptyStateText }}</td>
             </tr>
 
-            <tr v-for="(soal, index) in soalTryout" :key="soal.id" class="border-t">
+            <tr v-for="soal in filteredSoalTryout" :key="soal.id" class="border-t">
               <td class="px-3 py-2 flex items-center gap-1">
-                <button class="text-xs px-2 border rounded" :disabled="index === 0" @click="naikkanUrutan(index)">
+                <button
+                  class="text-xs px-2 border rounded"
+                  :disabled="!bisaNaik(soal.id)"
+                  @click="naikkanUrutan(soal.id)"
+                >
                   ↑
                 </button>
 
                 <button
                   class="text-xs px-2 border rounded"
-                  :disabled="index === soalTryout.length - 1"
-                  @click="turunkanUrutan(index)"
+                  :disabled="!bisaTurun(soal.id)"
+                  @click="turunkanUrutan(soal.id)"
                 >
                   ↓
                 </button>
 
-                <span class="ml-2">{{ index + 1 }}</span>
+                <span class="ml-2">{{ getNomorUrut(soal.id) }}</span>
               </td>
-              <td class="px-3 py-2">{{ (soal.pertanyaan || "").substring(0, 100) }}...</td>
-              <td class="px-3 py-2 text-center text-xs text-slate-600">{{ soal.komponen_nama || '-' }}</td>
+              <td class="px-3 py-2">
+                <p class="text-gray-800 leading-relaxed">{{ (soal.pertanyaan || "").substring(0, 100) }}...</p>
+                <div v-if="soal.tipe === 'pg' && soal.opsi_jawaban && soal.opsi_jawaban.length" class="mt-4 space-y-2">
+                  <div v-for="(opsi, i) in soal.opsi_jawaban" :key="i" class="flex items-start gap-3">
+                    <span class="w-6 text-right font-medium text-gray-700">{{ String.fromCharCode(65 + i) }}.</span>
+                    <div
+                      class="flex-1 text-gray-800 leading-relaxed"
+                      :class="opsi.is_correct ? 'text-emerald-600 font-medium' : ''"
+                      v-html="opsi.text"
+                    ></div>
+                    <span class="text-xs text-gray-400 whitespace-nowrap">
+                      {{ opsi.poin?.toFixed(2) || "0.00" }} poin
+                    </span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-3 py-2 text-center text-xs text-slate-600">{{ soal.komponen_nama || "-" }}</td>
 
               <td class="px-3 py-2 text-center">
                 <input
@@ -211,7 +270,7 @@
 
             <div>
               <p class="text-sm text-gray-500 mb-2">Pertanyaan</p>
-              <div class="prose max-w-none text-sm" v-html="detailSoal.pertanyaan"></div>
+              <div class="prose prose-sm max-w-none leading-relaxed text-gray-800" v-html="detailSoal.pertanyaan"></div>
             </div>
 
             <div v-if="detailSoal.tipe === 'isian'">
@@ -220,32 +279,44 @@
             </div>
 
             <div v-if="detailSoal.tipe === 'pg'">
-              <p class="text-sm text-gray-500 mb-2">Opsi Jawaban</p>
-              <div
-                v-for="(opsi, i) in detailSoal.opsi_jawaban"
-                :key="i"
-                class="flex items-start gap-3 p-3 border rounded-lg mb-2 text-sm"
-                :class="opsi.is_correct ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'"
-              >
-                <span class="font-semibold">{{ String.fromCharCode(65 + i) }}.</span>
-                <div class="flex-1" v-html="opsi.text"></div>
-                <span class="text-xs text-gray-500">Poin: {{ opsi.poin }}</span>
+              <p class="text-sm text-gray-500 mb-3">Opsi Jawaban</p>
+              <div class="space-y-3">
+                <div
+                  v-for="(opsi, i) in detailSoal.opsi_jawaban"
+                  :key="i"
+                  class="flex items-start gap-3 p-4 border rounded-xl text-sm leading-relaxed transition"
+                  :class="opsi.is_correct ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:bg-gray-50'"
+                >
+                  <div class="flex items-start gap-3 w-full">
+                    <span class="font-semibold w-6 text-right">{{ String.fromCharCode(65 + i) }}.</span>
+
+                    <div class="flex-1 prose prose-sm max-w-none" v-html="opsi.text"></div>
+                  </div>
+
+                  <span class="text-xs text-gray-400 whitespace-nowrap">Poin: {{ opsi.poin }}</span>
+                </div>
               </div>
             </div>
 
             <div v-if="detailSoal.tipe === 'pg_majemuk'">
-              <p class="text-sm text-gray-500 mb-2">Opsi Jawaban</p>
-              <div
-                v-for="(opsi, i) in detailSoal.opsi_jawaban"
-                :key="i"
-                class="flex items-start gap-3 p-3 border rounded-lg mb-2 text-sm"
-                :class="opsi.is_correct ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'"
-              >
-                <span class="font-semibold">{{ String.fromCharCode(65 + i) }}.</span>
-                <div class="flex-1" v-html="opsi.text"></div>
-                <div class="flex flex-col items-end">
-                  <span class="text-xs text-gray-500">Poin: {{ opsi.poin }}</span>
-                  <span v-if="opsi.is_correct" class="text-xs text-emerald-600 font-medium">Jawaban Benar</span>
+              <p class="text-sm text-gray-500 mb-3">Opsi Jawaban</p>
+              <div class="space-y-3">
+                <div
+                  v-for="(opsi, i) in detailSoal.opsi_jawaban"
+                  :key="i"
+                  class="flex items-start gap-3 p-4 border rounded-xl text-sm leading-relaxed transition"
+                  :class="opsi.is_correct ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:bg-gray-50'"
+                >
+                  <div class="flex items-start gap-3 w-full">
+                    <span class="font-semibold w-6 text-right">{{ String.fromCharCode(65 + i) }}.</span>
+
+                    <div class="flex-1 prose prose-sm max-w-none" v-html="opsi.text"></div>
+                  </div>
+
+                  <div class="flex flex-col items-end whitespace-nowrap">
+                    <span class="text-xs text-gray-400">Poin: {{ opsi.poin }}</span>
+                    <span v-if="opsi.is_correct" class="text-xs text-emerald-600 font-medium">Jawaban Benar</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -272,7 +343,7 @@
 
             <div v-if="detailSoal.pembahasan">
               <p class="text-sm text-gray-500 mb-2">Pembahasan</p>
-              <div class="prose max-w-none text-sm" v-html="detailSoal.pembahasan"></div>
+              <div class="prose prose-sm max-w-none leading-relaxed text-gray-700" v-html="detailSoal.pembahasan"></div>
             </div>
 
             <div class="pt-4 flex justify-end gap-3">
@@ -311,6 +382,11 @@ const route = useRoute()
 const tryout = ref(null)
 const soalTryout = ref([])
 const bankSoal = ref([])
+const selectedKomponen = ref("")
+
+const normalizeKomponenNama = (nama) => {
+  return (nama || "Tidak Spesifik").toString().trim().toLowerCase()
+}
 
 const sudahDipakai = (bankSoalId) => {
   return soalTryout.value.some((s) => s.banksoal_id === bankSoalId || s.id === bankSoalId)
@@ -319,12 +395,22 @@ const sudahDipakai = (bankSoalId) => {
 const ringkasanKomponen = computed(() => {
   const ringkasan = {}
   soalTryout.value.forEach((soal) => {
-    const nama = soal.komponen_nama || "Tidak Spesifik"
-    if (!ringkasan[nama]) ringkasan[nama] = 0
-    ringkasan[nama]++
+    const nama = (soal.komponen_nama || "Tidak Spesifik").toString().trim()
+    if (!ringkasan[nama]) ringkasan[nama] = { nama, jumlah: 0, durasi: 0 }
+    ringkasan[nama].jumlah++
   })
-  
-  return Object.entries(ringkasan).map(([nama, jumlah]) => ({ nama, jumlah }))
+
+  if (tryout.value && tryout.value.komponen) {
+    tryout.value.komponen.forEach((k) => {
+      if (ringkasan[k.nama_komponen]) {
+        ringkasan[k.nama_komponen].durasi = k.durasi_menit
+      } else {
+        ringkasan[k.nama_komponen] = { nama: k.nama_komponen, jumlah: 0, durasi: k.durasi_menit }
+      }
+    })
+  }
+
+  return Object.values(ringkasan)
 })
 
 const loadingSoal = ref(true)
@@ -424,15 +510,35 @@ const hapusSoal = async (soalId) => {
   loadSoalTryout()
 }
 
-const naikkanUrutan = (index) => {
-  if (index === 0) return
+const getSoalIndexById = (soalId) => {
+  return soalTryout.value.findIndex((soal) => soal.id === soalId)
+}
+
+const getNomorUrut = (soalId) => {
+  const index = getSoalIndexById(soalId)
+  return index > -1 ? index + 1 : "-"
+}
+
+const bisaNaik = (soalId) => {
+  return getSoalIndexById(soalId) > 0
+}
+
+const bisaTurun = (soalId) => {
+  const index = getSoalIndexById(soalId)
+  return index > -1 && index < soalTryout.value.length - 1
+}
+
+const naikkanUrutan = (soalId) => {
+  const index = getSoalIndexById(soalId)
+  if (index <= 0) return
   const temp = soalTryout.value[index]
   soalTryout.value[index] = soalTryout.value[index - 1]
   soalTryout.value[index - 1] = temp
 }
 
-const turunkanUrutan = (index) => {
-  if (index === soalTryout.value.length - 1) return
+const turunkanUrutan = (soalId) => {
+  const index = getSoalIndexById(soalId)
+  if (index < 0 || index === soalTryout.value.length - 1) return
   const temp = soalTryout.value[index]
   soalTryout.value[index] = soalTryout.value[index + 1]
   soalTryout.value[index + 1] = temp
@@ -446,6 +552,33 @@ const updatePoin = async (soal) => {
   } catch (e) {
     console.error("Gagal update poin", e)
   }
+}
+
+const isRingkasanSelected = (nama) => {
+  return normalizeKomponenNama(nama) === selectedKomponen.value
+}
+
+const filteredSoalTryout = computed(() => {
+  if (!selectedKomponen.value) return soalTryout.value
+  return soalTryout.value.filter((s) => normalizeKomponenNama(s.komponen_nama) === selectedKomponen.value)
+})
+
+const emptyStateText = computed(() => {
+  if (!selectedKomponen.value) return "Belum ada soal pada batch ini"
+  return "Tidak ada soal untuk komponen yang dipilih"
+})
+
+const toggleFilterKomponen = (nama) => {
+  const normalized = normalizeKomponenNama(nama)
+  if (selectedKomponen.value === normalized) {
+    selectedKomponen.value = ""
+  } else {
+    selectedKomponen.value = normalized
+  }
+}
+
+const resetFilter = () => {
+  selectedKomponen.value = ""
 }
 
 onMounted(() => {

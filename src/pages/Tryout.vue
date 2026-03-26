@@ -18,15 +18,15 @@
       </div>
 
       <div class="mb-4 flex flex-wrap items-center gap-3">
-        <label class="text-sm font-medium">Subtes / Kategori:</label>
+        <label class="text-sm font-medium">Komponen:</label>
         <select
-          v-model="selectedMapel"
+          v-model="selectedKomponen"
           @change="fetchTryout"
           class="px-3 py-2 border rounded-xl text-sm bg-white"
         >
-          <option value="">Semua Subtes</option>
-          <option v-for="m in mapelList" :key="m.id" :value="m.id">
-            {{ m.nama }}
+          <option value="">Semua Komponen</option>
+          <option v-for="k in komponenList" :key="k.id" :value="k.id">
+            {{ k.nama_komponen }}
           </option>
         </select>
 
@@ -60,16 +60,16 @@
                 </span>
               </th>
               <th
-                @click="setSort('mapel')"
+                @click="setSort('komponen_text')"
                 class="px-4 py-3 text-left cursor-pointer select-none hover:bg-slate-200 transition"
               >
                 <span class="inline-flex items-center gap-1">
-                  Subtes
+                  Komponen
                   <span class="text-[10px] leading-none">
-                    <span :class="sortKey === 'mapel' && sortDir === 'asc' ? 'text-slate-800' : 'text-slate-400'">
+                    <span :class="sortKey === 'komponen_text' && sortDir === 'asc' ? 'text-slate-800' : 'text-slate-400'">
                       ▲
                     </span>
-                    <span :class="sortKey === 'mapel' && sortDir === 'desc' ? 'text-slate-800' : 'text-slate-400'">
+                    <span :class="sortKey === 'komponen_text' && sortDir === 'desc' ? 'text-slate-800' : 'text-slate-400'">
                       ▼
                     </span>
                   </span>
@@ -91,7 +91,7 @@
             <tr v-for="(item, index) in tryouts" :key="item.id" class="border-t">
               <td class="px-4 py-3">{{ index + 1 }}</td>
               <td class="px-4 py-3 font-medium">{{ item.paket }}</td>
-              <td class="px-4 py-3">{{ getSubtestLabel(item) }}</td>
+              <td class="px-4 py-3">{{ item.komponen_text || '-' }}</td>
               <td class="px-4 py-3 text-center font-medium">
                 {{ item.total_soal ?? 0 }}
               </td>
@@ -142,12 +142,11 @@ import Sidebar from "@/components/layout/Sidebar.vue"
 const tryouts = ref([])
 const allTryouts = ref([])
 const loading = ref(true)
-const selectedMapel = ref("")
+const selectedKomponen = ref("")
 const searchNama = ref("")
-const mapelList = ref([])
+const komponenList = ref([])
 const sortKey = ref("")
 const sortDir = ref("asc")
-const getSubtestLabel = (item) => item?.mapel || item?.mapel_nama || item?.subtes || item?.kategori || "-"
 
 const formatDate = (datetime) => {
   if (!datetime) return "-"
@@ -166,7 +165,7 @@ const fetchTryout = async () => {
   try {
     const res = await api.get("/tryout", {
       params: {
-        mapel_id: selectedMapel.value || undefined
+        komponen_id: selectedKomponen.value || undefined
       }
     })
 
@@ -217,13 +216,13 @@ watch(searchNama, () => {
   applySearch()
 })
 
-const fetchMapel = async () => {
-  const res = await api.get("/mapel")
-  mapelList.value = res.data
+const fetchKomponen = async () => {
+  const res = await api.get("/komponen")
+  komponenList.value = res.data
 }
 
 onMounted(async () => {
-  await fetchMapel()
+  await fetchKomponen()
   await fetchTryout()
 })
 </script>
