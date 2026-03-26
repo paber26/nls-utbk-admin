@@ -36,9 +36,6 @@
               <h2 class="text-base font-semibold text-slate-800">
                 {{ tryout?.paket }}
               </h2>
-              <p class="text-xs text-slate-500">
-                {{ tryout?.mapel_nama || tryout?.mapel || "Subtes belum ditentukan" }}
-              </p>
             </div>
 
             <span
@@ -78,6 +75,21 @@
               <p class="text-sm font-medium text-slate-700">
                 {{ formatDateTime(tryout?.mulai) }} - {{ formatDateTime(tryout?.selesai) }}
               </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- RINGKASAN KOMPONEN SOAL -->
+        <section v-if="ringkasanKomponen.length > 0" class="bg-white rounded-xl border p-6 mb-6">
+          <h2 class="font-medium mb-4">Ringkasan Komponen Soal</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div
+              v-for="(ringkasan, idx) in ringkasanKomponen"
+              :key="idx"
+              class="p-4 border rounded-xl flex flex-col items-center justify-center bg-slate-50 relative"
+            >
+              <span class="text-3xl font-bold text-blue-600 mb-1">{{ ringkasan.jumlah }}</span>
+              <span class="text-xs text-slate-500 text-center font-medium">{{ ringkasan.nama }}</span>
             </div>
           </div>
         </section>
@@ -126,6 +138,10 @@
                           ? "PG Majemuk"
                           : "Isian Singkat"
                   }}
+                </span>
+                
+                <span class="ml-2 text-xs px-2 py-1 text-slate-600 border rounded-full">
+                  {{ item.komponen_nama || '-' }}
                 </span>
               </h3>
 
@@ -237,6 +253,18 @@ const route = useRoute()
 
 const tryout = ref(null)
 const soalList = ref([])
+
+const ringkasanKomponen = computed(() => {
+  const ringkasan = {}
+  soalList.value.forEach((soal) => {
+    const nama = soal.komponen_nama || "Tidak Spesifik"
+    if (!ringkasan[nama]) ringkasan[nama] = 0
+    ringkasan[nama]++
+  })
+  
+  return Object.entries(ringkasan).map(([nama, jumlah]) => ({ nama, jumlah }))
+})
+
 const totalPoin = computed(() => {
   return soalList.value.reduce((total, soal) => {
     return total + (Number(soal.poin) || 0)
