@@ -79,10 +79,10 @@
             class="px-3 py-2 border rounded-lg text-sm"
           />
 
-          <select v-model="filter.mapel_id" @change="loadBankSoal" class="px-3 py-2 border rounded-lg text-sm">
-            <option value="">Semua Subtes</option>
-            <option v-for="m in daftarMapel" :key="m.id" :value="m.id">
-              {{ m.nama }}
+          <select v-model="filter.komponen_id" @change="loadBankSoal" class="px-3 py-2 border rounded-lg text-sm">
+            <option value="">Semua Komponen</option>
+            <option v-for="k in daftarKomponen" :key="k.id" :value="k.id">
+              {{ k.nama_komponen }}
             </option>
           </select>
         </div>
@@ -94,7 +94,7 @@
         <table v-else class="w-full text-sm border">
           <thead class="bg-slate-100">
             <tr>
-              <th class="px-3 py-2 text-left">Subtes</th>
+              <th class="px-3 py-2 text-left">Komponen</th>
               <th class="px-3 py-2 text-left">Isi Soal</th>
               <th class="px-3 py-2 text-center">Aksi</th>
             </tr>
@@ -102,7 +102,7 @@
           <tbody>
             <tr v-for="soal in bankSoal" :key="soal.id" class="border-t">
               <td class="px-3 py-2">
-                {{ soal.mapel_nama || "-" }}
+                {{ soal.komponen_nama || "-" }}
               </td>
               <td class="px-3 py-2">{{ (soal.pertanyaan || "").substring(0, 100) }}...</td>
               <td class="px-3 py-2 text-center">
@@ -144,19 +144,19 @@ const loadingBank = ref(true)
 
 const filter = ref({
   q: "",
-  mapel_id: ""
+  komponen_id: ""
 })
 
-const daftarMapel = ref([])
+const daftarKomponen = ref([])
 
 const loadTryout = async () => {
   const res = await api.get(`/tryout/${route.params.id}`)
   tryout.value = res.data
 }
 
-const loadMapel = async () => {
-  const res = await api.get("/mapel")
-  daftarMapel.value = res.data
+const loadKomponen = async () => {
+  const res = await api.get("/komponen")
+  daftarKomponen.value = res.data
 }
 
 const loadSoalTryout = async () => {
@@ -178,7 +178,7 @@ const loadBankSoal = async () => {
     const res = await api.get("/banksoaltryout", {
       params: {
         q: filter.value.q,
-        mapel_id: filter.value.mapel_id
+        komponen_id: filter.value.komponen_id
       }
     })
     bankSoal.value = Array.isArray(res.data) ? res.data : []
@@ -230,6 +230,6 @@ onMounted(() => {
   loadTryout()
   loadSoalTryout()
   loadBankSoal()
-  loadMapel()
+  loadKomponen()
 })
 </script>

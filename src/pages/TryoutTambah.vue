@@ -61,8 +61,18 @@
                       <span class="font-medium block mb-1">{{ komponen.komponen_nama || komponen.nama_komponen }}</span>
                       <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block">{{ komponen.mata_uji }}</span>
                     </label>
-                    <div v-if="form.komponen_id.includes(komponen.id)" class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
-                      {{ form.komponen_id.indexOf(komponen.id) + 1 }}
+                    <div v-if="form.komponen_id.includes(komponen.id)" class="ml-2 flex flex-col justify-end items-end gap-1">
+                      <div class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold self-end">
+                        {{ form.komponen_id.indexOf(komponen.id) + 1 }}
+                      </div>
+                      <input
+                        type="number"
+                        v-model="form.durasiPerKomponen[komponen.id]"
+                        placeholder="Menit"
+                        class="w-16 px-2 py-1 text-xs border rounded border-slate-300 text-center"
+                        min="1"
+                        required
+                      />
                     </div>
                   </div>
                 </div>
@@ -78,9 +88,9 @@
                 <label class="text-sm text-slate-500">Durasi (menit)</label>
                 <input
                   type="number"
-                  class="w-full mt-1 px-4 py-2 border rounded-lg"
-                  placeholder="Contoh: 120"
-                  v-model="form.durasi_menit"
+                  class="w-full mt-1 px-4 py-2 border rounded-lg bg-slate-50 cursor-not-allowed"
+                  :value="totalDurasi"
+                  readonly
                 />
                 <p v-if="errors.durasi_menit" class="text-xs text-red-500 mt-1">
                   {{ errors.durasi_menit }}
@@ -132,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useRouter } from "vue-router"
 import api from "@/services/api"
 import Sidebar from "../components/layout/Sidebar.vue"
@@ -142,6 +152,7 @@ const router = useRouter()
 const form = ref({
   paket: "",
   komponen_id: [],
+  durasiPerKomponen: {},
   durasi_menit: "",
   mulai: "",
   selesai: "",
@@ -151,6 +162,12 @@ const form = ref({
 const errors = ref({})
 
 const komponenList = ref([])
+
+const totalDurasi = computed(() => {
+  return form.value.komponen_id.reduce((sum, id) => {
+    return sum + (Number(form.value.durasiPerKomponen[id]) || 0)
+  }, 0)
+})
 
 const fetchKomponen = async () => {
   try {
@@ -192,7 +209,7 @@ const validateForm = () => {
     errors.value.komponen_id = "Minimal satu komponen wajib dipilih"
   }
 
-  if (!form.value.durasi_menit || form.value.durasi_menit <= 0) {
+  if (!totalDurasi.value || totalDurasi.value <= 0) {
     errors.value.durasi_menit = "Durasi harus lebih dari 0 menit"
   }
 
@@ -227,10 +244,21 @@ const submitTryout = async () => {
     //   created_at: new Date().toISOString()
     // })
 
+    const payload = {
+      ...form.value,
+      durasi_menit: totalDurasi.value,
+      komponen: form.value.komponen_id.map(id => ({
+        id,
+        durasi_menit: Number(form.value.durasiPerKomponen[id]) || 0
+      }))
+    }
+    delete payload.komponen_id
+    delete payload.durasiPerKomponen
+
     localStorage.setItem("draft_tryout", JSON.stringify(form.value))
 
     // kirim ke backend
-    const res = await api.post("/tryout", form.value)
+    const res = await api.post("/tryout", payload)
 
 
     if (res.data?.success) {

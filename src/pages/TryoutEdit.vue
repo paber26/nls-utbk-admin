@@ -45,19 +45,56 @@
                 </div>
               </div>
 
-              <div>
-                <label class="text-sm text-slate-500">Subtes / Kategori Soal</label>
-                <select class="w-full mt-1 px-4 py-2 border rounded-lg" v-model="form.mapel_id">
-                  <option value="">Pilih Subtes</option>
-                  <option v-for="mapel in mapels" :key="mapel.id" :value="mapel.id">
-                    {{ mapel.nama }}
-                  </option>
-                </select>
+              <div class="md:col-span-2">
+                <label class="text-sm text-slate-500 mb-2 block">
+                  Komponen <span class="text-xs text-slate-400 font-normal ml-1">(Pilih sesuai urutan pengerjaan)</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div
+                    v-for="komponen in komponenList"
+                    :key="komponen.id"
+                    class="flex items-start gap-3 border p-3 rounded-lg transition-colors"
+                    :class="form.komponen_id.includes(komponen.id) ? 'border-orange-500 bg-orange-50' : 'bg-white border-slate-200 hover:bg-slate-50'"
+                  >
+                    <input
+                      type="checkbox"
+                      :id="'komponen-' + komponen.id"
+                      :value="komponen.id"
+                      v-model="form.komponen_id"
+                      class="mt-1 w-4 h-4 text-orange-600 rounded focus:ring-orange-500 cursor-pointer"
+                    />
+                    <label :for="'komponen-' + komponen.id" class="text-sm text-slate-700 cursor-pointer flex-1">
+                      <span class="font-medium block mb-1">{{ komponen.komponen_nama || komponen.nama_komponen || komponen.nama }}</span>
+                      <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block">{{ komponen.mata_uji || komponen.tingkat }}</span>
+                    </label>
+                    <div v-if="form.komponen_id.includes(komponen.id)" class="ml-2 flex flex-col justify-end items-end gap-1">
+                      <div class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold self-end">
+                        {{ form.komponen_id.indexOf(komponen.id) + 1 }}
+                      </div>
+                      <input
+                        type="number"
+                        v-model="form.durasiPerKomponen[komponen.id]"
+                        placeholder="Menit"
+                        class="w-16 px-2 py-1 text-xs border rounded border-slate-300 text-center"
+                        min="1"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">
+                  * Angka di atas menunjukkan urutan pengerjaan komponen saat tryout berlangsung.
+                </p>
               </div>
 
               <div>
                 <label class="text-sm text-slate-500">Durasi (menit)</label>
-                <input type="number" v-model="form.durasi_menit" class="w-full mt-1 px-4 py-2 border rounded-lg" />
+                <input 
+                  type="number" 
+                  :value="totalDurasi"
+                  class="w-full mt-1 px-4 py-2 border rounded-lg bg-slate-50 cursor-not-allowed" 
+                  readonly
+                />
               </div>
 
               <div>
@@ -201,7 +238,8 @@ const editorConfig = {
 
 const form = ref({
   paket: "",
-  mapel_id: "",
+  komponen_id: [],
+  durasiPerKomponen: {},
   durasi_menit: "",
   mulai: "",
   selesai: "",
@@ -209,16 +247,22 @@ const form = ref({
   pesan_selesai: ""
 })
 
-const mapels = ref([])
+const komponenList = ref([])
 
-const fetchMapel = async () => {
+const fetchKomponen = async () => {
   try {
-    const res = await api.get("/mapel")
-    mapels.value = res.data.data || res.data
+    const res = await api.get("/komponen")
+    komponenList.value = res.data.data || res.data
   } catch (err) {
-    console.error("Gagal mengambil data mapel:", err)
+    console.error("Gagal mengambil data komponen:", err)
   }
 }
+
+const totalDurasi = computed(() => {
+  return form.value.komponen_id.reduce((sum, id) => {
+    return sum + (Number(form.value.durasiPerKomponen[id]) || 0)
+  }, 0)
+})
 
 const statusOptions = computed(() => [
   { value: "draft", label: "Draft" },
@@ -227,16 +271,24 @@ const statusOptions = computed(() => [
 ])
 
 onMounted(async () => {
-  fetchMapel()
+  fetchKomponen()
   try {
     const id = route.params.id
     const { data } = await api.get(`/tryout/${id}`)
+    
+    // Format date for datetime-local input
+    const formatDateTime = (dt) => dt ? new Date(dt).toISOString().slice(0, 16) : ""
+
     form.value = {
       paket: data.paket ?? "",
-      mapel_id: data.mapel_id ?? "",
+      komponen_id: data.komponen ? data.komponen.map(k => k.id) : [],
+      durasiPerKomponen: data.komponen ? data.komponen.reduce((acc, k) => {
+        acc[k.id] = k.durasi_menit
+        return acc
+      }, {}) : {},
       durasi_menit: data.durasi_menit ?? "",
-      mulai: data.mulai ?? "",
-      selesai: data.selesai ?? "",
+      mulai: formatDateTime(data.mulai),
+      selesai: formatDateTime(data.selesai),
       status: data.status ?? "",
       ketentuan_khusus: data.ketentuan_khusus ?? "",
       pesan_selesai: data.pesan_selesai ?? ""
@@ -251,8 +303,11 @@ const handleSubmit = async () => {
     const id = route.params.id
     const payload = {
       paket: form.value.paket,
-      mapel_id: Number(form.value.mapel_id),
-      durasi_menit: Number(form.value.durasi_menit),
+      komponen: form.value.komponen_id.map(id => ({
+        id,
+        durasi_menit: Number(form.value.durasiPerKomponen[id]) || 0
+      })),
+      durasi_menit: totalDurasi.value,
       mulai: form.value.mulai,
       selesai: form.value.selesai,
       status: form.value.status,
