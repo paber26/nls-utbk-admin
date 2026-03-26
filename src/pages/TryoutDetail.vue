@@ -4,11 +4,11 @@
 
     <main class="flex-1">
       <!-- TOPBAR -->
-        <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 class="text-lg font-semibold">Detail Batch Tryout</h1>
-            <p class="text-sm text-slate-500">Preview paket soal sebelum batch dibuka ke peserta</p>
-          </div>
+      <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
+        <div>
+          <h1 class="text-lg font-semibold">Detail Batch Tryout</h1>
+          <p class="text-sm text-slate-500">Preview paket soal sebelum batch dibuka ke peserta</p>
+        </div>
 
         <div class="flex gap-3">
           <RouterLink
@@ -18,14 +18,14 @@
             Kelola Soal
           </RouterLink>
 
-            <RouterLink
-              :to="`/tryout/edit/${route.params.id}`"
-              class="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm hover:bg-orange-700"
-            >
-              Edit Batch
-            </RouterLink>
-          </div>
-        </header>
+          <RouterLink
+            :to="`/tryout/edit/${route.params.id}`"
+            class="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm hover:bg-orange-700"
+          >
+            Edit Batch
+          </RouterLink>
+        </div>
+      </header>
 
       <div v-if="loading" class="px-6 py-6 text-slate-500">Memuat detail batch tryout...</div>
 
@@ -96,6 +96,7 @@
           <div
             v-for="(item, index) in soalList"
             :key="item.id"
+            :data-soal="index"
             :class="[
               'rounded-xl border p-6',
               item.tipe === 'pg' && 'bg-amber-50 border-amber-200',
@@ -180,6 +181,45 @@
           </div>
         </section>
       </div>
+
+      <!-- FLOATING ACTION BUTTONS -->
+      <div class="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
+        <!-- Button Daftar Soal -->
+        <div class="relative">
+          <button
+            @click="showList = !showList"
+            class="bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-orange-700 text-sm"
+          >
+            Daftar Soal
+          </button>
+
+          <div v-if="showList" class="fixed inset-0 z-40" @click="showList = false">
+            <div
+              class="absolute right-6 bottom-20 w-72 max-h-80 overflow-y-auto bg-white border rounded-xl shadow-xl p-3"
+              @click.stop
+            >
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  v-for="(item, index) in soalList"
+                  :key="item.id"
+                  @click="scrollToSoal(index)"
+                  class="text-xs py-2 rounded-lg border bg-slate-50 hover:bg-blue-600 hover:text-white transition"
+                >
+                  {{ index + 1 }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Button Scroll to Top -->
+        <button
+          @click="scrollToTop"
+          class="bg-yellow-400 text-white p-3 rounded-full shadow-lg hover:bg-yellow-500 ring-4 ring-yellow-200"
+        >
+          ↑
+        </button>
+      </div>
     </main>
   </div>
 </template>
@@ -235,6 +275,19 @@ const renderKatex = async () => {
 }
 
 const loading = ref(true)
+const showList = ref(false)
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" })
+}
+
+const scrollToSoal = (index) => {
+  const elements = document.querySelectorAll("[data-soal]")
+  if (elements[index]) {
+    elements[index].scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+  showList.value = false
+}
 
 onMounted(async () => {
   try {
@@ -245,7 +298,6 @@ onMounted(async () => {
 
     tryout.value = tryoutRes.data
     soalList.value = soalRes.data
-
 
     // tampilkan dulu kontennya
     loading.value = false
