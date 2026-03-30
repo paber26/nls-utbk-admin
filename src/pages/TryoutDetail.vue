@@ -98,10 +98,10 @@
               v-for="(ringkasan, idx) in ringkasanKomponen"
               :key="idx"
               type="button"
-              @click="toggleFilterKomponen(ringkasan.nama)"
+              @click="toggleFilterKomponen(ringkasan.filterKey)"
               :class="[
                 'p-3 sm:p-4 border rounded-xl flex flex-col items-center justify-center transition relative',
-                isRingkasanSelected(ringkasan.nama)
+                isRingkasanSelected(ringkasan.filterKey)
                   ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                   : 'bg-slate-50 hover:bg-slate-100'
               ]"
@@ -109,7 +109,7 @@
               <span
                 :class="[
                   'text-2xl sm:text-3xl font-bold mb-1',
-                  isRingkasanSelected(ringkasan.nama) ? 'text-white' : 'text-blue-600'
+                  isRingkasanSelected(ringkasan.filterKey) ? 'text-white' : 'text-blue-600'
                 ]"
               >
                 {{ ringkasan.jumlah }}
@@ -117,7 +117,7 @@
               <span
                 :class="[
                   'text-[10px] sm:text-xs text-center font-medium line-clamp-2 leading-tight',
-                  isRingkasanSelected(ringkasan.nama) ? 'text-blue-100' : 'text-slate-500'
+                  isRingkasanSelected(ringkasan.filterKey) ? 'text-blue-100' : 'text-slate-500'
                 ]"
               >
                 {{ ringkasan.nama }}
@@ -125,7 +125,7 @@
               <span
                 :class="[
                   'text-[9px] sm:text-[10px] mt-1.5 font-medium px-2 py-0.5 rounded-full border shadow-sm',
-                  isRingkasanSelected(ringkasan.nama)
+                  isRingkasanSelected(ringkasan.filterKey)
                     ? 'bg-blue-500 border-blue-400 text-white'
                     : 'bg-white text-slate-400 border-slate-100'
                 ]"
@@ -134,7 +134,7 @@
               </span>
 
               <span
-                v-if="isRingkasanSelected(ringkasan.nama)"
+                v-if="isRingkasanSelected(ringkasan.filterKey)"
                 class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 text-[9px] sm:text-[10px] bg-white text-blue-600 px-1.5 sm:px-2 py-0.5 rounded-full font-bold shadow-sm"
               >
                 ✓
@@ -208,7 +208,7 @@
             </div>
 
             <div
-              class="mb-4 leading-relaxed text-sm sm:text-base prose prose-sm max-w-none text-slate-800"
+              class="mb-6 leading-relaxed text-sm sm:text-base prose prose-sm max-w-none text-slate-800"
               v-html="item.pertanyaan"
             ></div>
 
@@ -228,31 +228,45 @@
               </div>
             </div>
 
-            <ul v-if="item.tipe === 'pg' || item.tipe === 'pg_majemuk'" class="space-y-3 text-sm">
+            <ul v-if="item.tipe === 'pg' || item.tipe === 'pg_majemuk'" class="space-y-2">
               <li
                 v-for="opsi in item.opsi"
                 :key="opsi.id"
-                class="flex gap-3 items-start p-3 rounded-lg border bg-white overflow-hidden"
-                :class="opsi.is_correct ? 'border-emerald-300 bg-emerald-50' : ''"
+                class="flex items-center gap-3 p-3 rounded-xl border bg-white"
+                :class="{
+                  'border-emerald-400 bg-emerald-50': opsi.is_correct,
+                  'border-slate-200': !opsi.is_correct
+                }"
               >
-                <div class="flex gap-2 flex-1 min-w-0">
-                  <span class="font-semibold mt-0.5" :class="opsi.is_correct ? 'text-emerald-700' : 'text-slate-700'">
-                    {{ opsi.label }}.
-                  </span>
-                  <span
-                    class="prose prose-sm max-w-none text-slate-800 break-words"
-                    :class="opsi.is_correct ? 'text-emerald-800 font-medium' : ''"
-                    v-html="opsi.teks"
-                  ></span>
+                <!-- LABEL BULAT -->
+                <div
+                  class="w-8 h-8 flex items-center justify-center rounded-full font-semibold text-sm border transition-all"
+                  :class="{
+                    'bg-emerald-500 text-white border-emerald-500': opsi.is_correct,
+                    'bg-slate-100 text-slate-600 border-slate-200': !opsi.is_correct
+                  }"
+                >
+                  {{ opsi.label }}
                 </div>
 
-                <div class="flex items-center gap-2 self-end sm:self-auto">
-                  <span v-if="opsi.is_correct" class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">
-                    Benar
-                  </span>
+                <!-- TEKS OPSI -->
+                <div class="flex-1 min-w-0">
+                  <div
+                    class="prose prose-sm max-w-none break-words"
+                    :class="opsi.is_correct ? 'text-emerald-800 font-medium' : 'text-slate-700'"
+                    v-html="opsi.teks"
+                  ></div>
+                </div>
+
+                <!-- INFO KANAN -->
+                <div class="flex items-center gap-2">
                   <span
-                    class="text-[10px] sm:text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500 whitespace-nowrap"
+                    v-if="opsi.is_correct"
+                    class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full"
                   >
+                    ✓ Benar
+                  </span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
                     {{ opsi.poin }} poin
                   </span>
                 </div>
@@ -273,42 +287,119 @@
         </section>
       </div>
 
-      <!-- FLOATING ACTION BUTTONS -->
-      <div class="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
-        <!-- Button Daftar Soal -->
-        <div class="relative">
-          <button
-            @click="showList = !showList"
-            class="bg-orange-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-orange-700 text-sm"
-          >
-            Daftar Soal
-          </button>
-
-          <div v-if="showList" class="fixed inset-0 z-40" @click="showList = false">
-            <div
-              class="absolute right-6 bottom-20 w-72 max-h-80 overflow-y-auto bg-white border rounded-xl shadow-xl p-3"
-              @click.stop
+      <!-- MODAL DAFTAR SOAL -->
+      <div
+        v-if="showList"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+        @click="showList = false"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden transform scale-100 transition-transform"
+          @click.stop
+        >
+          <div class="px-5 sm:px-6 py-4 border-b flex justify-between items-center bg-slate-50">
+            <div>
+              <h3 class="font-semibold text-lg text-slate-800">Daftar Soal</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Pilih soal untuk melihat preview</p>
+            </div>
+            <button
+              @click="showList = false"
+              class="text-slate-400 hover:text-red-500 bg-white hover:bg-red-50 rounded-full p-2 transition-all border shadow-sm"
             >
-              <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                <button
-                  v-for="item in filteredSoalList"
-                  :key="item.id"
-                  @click="scrollToSoal(item.id)"
-                  class="text-xs py-2 rounded-lg border bg-slate-50 hover:bg-blue-600 hover:text-white transition font-medium"
-                >
-                  {{ getNomorUrut(item.id) }}
-                </button>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-50/30">
+            <div v-if="filteredSoalList.length === 0" class="py-10 text-center text-slate-500">
+              Tidak ada soal pada komponen yang dipilih.
+            </div>
+            <div v-else class="space-y-6">
+              <div v-for="group in Object.values(groupedSoalList)" :key="group.nama" class="space-y-3">
+                <!-- LABEL KOMPONEN -->
+                <div class="flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+                  <h4 class="text-sm font-semibold text-slate-700">
+                    {{ group.nama }}
+                  </h4>
+                  <span class="text-xs text-slate-400">({{ group.items.length }} soal)</span>
+                </div>
+
+                <!-- GRID SOAL -->
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+                  <button
+                    v-for="item in group.items"
+                    :key="item.id"
+                    @click="scrollToSoal(item.id)"
+                    class="flex flex-col items-center justify-center p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all group relative overflow-hidden ring-1 ring-transparent hover:ring-blue-100"
+                  >
+                    <div class="w-full flex justify-between items-start mb-1 px-1">
+                      <span
+                        class="text-[9px] font-bold tracking-wider"
+                        :class="{
+                          'text-amber-500': item.tipe === 'pg',
+                          'text-orange-500': item.tipe === 'pg_kompleks' || item.tipe === 'pg_majemuk',
+                          'text-emerald-500': item.tipe === 'isian'
+                        }"
+                      >
+                        {{
+                          item.tipe === "pg"
+                            ? "PG"
+                            : item.tipe === "pg_kompleks"
+                              ? "PGK"
+                              : item.tipe === "pg_majemuk"
+                                ? "PGM"
+                                : item.tipe === "isian"
+                                  ? "ISIAN"
+                                  : "?"
+                        }}
+                      </span>
+                      <span class="text-slate-200 group-hover:text-blue-200 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </span>
+                    </div>
+
+                    <span
+                      class="text-2xl font-bold text-slate-700 mb-2 group-hover:text-blue-600 group-hover:scale-110 transition-all"
+                    >
+                      {{ getNomorUrut(item.id) }}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- FLOATING ACTION BUTTONS -->
+      <div
+        class="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-40"
+        :class="{ 'opacity-0 pointer-events-none': showList }"
+      >
+        <!-- Button Daftar Soal -->
+        <button
+          @click="showList = true"
+          class="bg-orange-600 text-white pr-4 pl-3.5 py-2.5 rounded-full shadow-lg hover:bg-orange-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm font-medium flex items-center gap-2 border border-orange-500"
+        >
+          <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          Daftar Soal
+        </button>
 
         <!-- Button Scroll to Top -->
         <button
           @click="scrollToTop"
-          class="bg-yellow-400 text-white p-3 rounded-full shadow-lg hover:bg-yellow-500 ring-4 ring-yellow-200"
+          class="bg-yellow-400 text-white p-3 rounded-full shadow-lg hover:bg-yellow-500 ring-4 ring-yellow-100 hover:ring-yellow-200 transition-all flex items-center justify-center hover:-translate-y-0.5 active:translate-y-0 border border-yellow-500/50"
         >
-          ↑
+          <svg class="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+          </svg>
         </button>
       </div>
     </main>
@@ -329,20 +420,62 @@ const route = useRoute()
 const tryout = ref(null)
 const soalList = ref([])
 
+const normalizeKomponenNama = (nama) => {
+  return (nama || "Tidak Spesifik").toString().replace(/\s+/g, " ").trim().toLowerCase()
+}
+
+const getKomponenId = (item) => {
+  const rawId = item?.komponen_id ?? item?.id_komponen ?? item?.komponen?.id ?? item?.komponen?.komponen_id ?? null
+  if (rawId === null || rawId === undefined || rawId === "") return null
+  return String(rawId).trim()
+}
+
+const getKomponenNama = (item) => {
+  const rawNama = item?.komponen_nama ?? item?.nama_komponen ?? item?.komponen?.nama_komponen ?? item?.komponen ?? ""
+  const nama = String(rawNama || "").trim()
+  return nama || "Tidak Spesifik"
+}
+
+const komponenIdByNama = computed(() => {
+  const map = {}
+  ;(tryout.value?.komponen || []).forEach((komponen) => {
+    const namaKey = normalizeKomponenNama(getKomponenNama(komponen))
+    const id =
+      getKomponenId(komponen) || (komponen?.id !== undefined && komponen?.id !== null ? String(komponen.id) : null)
+    if (namaKey && id) map[namaKey] = id
+  })
+  return map
+})
+
+const getKomponenFilterKey = (item) => {
+  const nama = getKomponenNama(item)
+  const namaKey = normalizeKomponenNama(nama)
+  const id = getKomponenId(item) || komponenIdByNama.value[namaKey]
+  return id ? `id:${id}` : `nama:${namaKey}`
+}
+
 const ringkasanKomponen = computed(() => {
   const ringkasan = {}
   soalList.value.forEach((soal) => {
-    const nama = soal.komponen_nama || "Tidak Spesifik"
-    if (!ringkasan[nama]) ringkasan[nama] = { nama, jumlah: 0, durasi: 0 }
-    ringkasan[nama].jumlah++
+    const nama = getKomponenNama(soal)
+    const filterKey = getKomponenFilterKey(soal)
+    if (!ringkasan[filterKey]) ringkasan[filterKey] = { nama, filterKey, jumlah: 0, durasi: 0 }
+    ringkasan[filterKey].jumlah++
   })
 
   if (tryout.value && tryout.value.komponen) {
     tryout.value.komponen.forEach((k) => {
-      if (ringkasan[k.nama_komponen]) {
-        ringkasan[k.nama_komponen].durasi = k.durasi_menit
+      const nama = getKomponenNama(k)
+      const filterKey = getKomponenFilterKey(k)
+      if (ringkasan[filterKey]) {
+        ringkasan[filterKey].durasi = Number(k.durasi_menit) || 0
       } else {
-        ringkasan[k.nama_komponen] = { nama: k.nama_komponen, jumlah: 0, durasi: k.durasi_menit }
+        ringkasan[filterKey] = {
+          nama,
+          filterKey,
+          jumlah: 0,
+          durasi: Number(k.durasi_menit) || 0
+        }
       }
     })
   }
@@ -358,17 +491,13 @@ const totalPoin = computed(() => {
 
 const selectedKomponen = ref("")
 
-const normalizeKomponenNama = (nama) => {
-  return (nama || "Tidak Spesifik").toString().trim().toLowerCase()
-}
-
-const isRingkasanSelected = (nama) => {
-  return normalizeKomponenNama(nama) === selectedKomponen.value
+const isRingkasanSelected = (filterKey) => {
+  return filterKey === selectedKomponen.value
 }
 
 const filteredSoalList = computed(() => {
   if (!selectedKomponen.value) return soalList.value
-  return soalList.value.filter((s) => normalizeKomponenNama(s.komponen_nama) === selectedKomponen.value)
+  return soalList.value.filter((s) => getKomponenFilterKey(s) === selectedKomponen.value)
 })
 
 const emptyStateText = computed(() => {
@@ -376,12 +505,11 @@ const emptyStateText = computed(() => {
   return "Tidak ada soal untuk komponen yang dipilih"
 })
 
-const toggleFilterKomponen = (nama) => {
-  const normalized = normalizeKomponenNama(nama)
-  if (selectedKomponen.value === normalized) {
+const toggleFilterKomponen = (filterKey) => {
+  if (selectedKomponen.value === filterKey) {
     selectedKomponen.value = ""
   } else {
-    selectedKomponen.value = normalized
+    selectedKomponen.value = filterKey
   }
 }
 
@@ -413,20 +541,22 @@ const formatDateTime = (datetime) => {
 const renderKatex = async () => {
   await nextTick()
 
-  const container = document.querySelector("main")
-  if (!container) return
+  const containers = document.querySelectorAll(".prose")
+  if (!containers.length) return
 
-  try {
-    renderMathInElement(container, {
-      delimiters: [
-        { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false }
-      ],
-      throwOnError: false
-    })
-  } catch (e) {
-    console.error("KaTeX render error:", e)
-  }
+  containers.forEach((container) => {
+    try {
+      renderMathInElement(container, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ],
+        throwOnError: false
+      })
+    } catch (e) {
+      console.error("KaTeX render error:", e)
+    }
+  })
 }
 
 const loading = ref(true)
@@ -469,11 +599,40 @@ onMounted(async () => {
 })
 
 watch(
-  () => soalList.value,
+  () => ringkasanKomponen.value,
+  (items) => {
+    if (selectedKomponen.value && !items.some((item) => item.filterKey === selectedKomponen.value)) {
+      selectedKomponen.value = ""
+    }
+  }
+)
+
+watch(
+  () => filteredSoalList.value,
   async () => {
     await nextTick()
     await renderKatex()
   },
   { deep: true }
 )
+
+// Grouped by komponen
+const groupedSoalList = computed(() => {
+  const groups = {}
+
+  filteredSoalList.value.forEach((item) => {
+    const nama = getKomponenNama(item)
+
+    if (!groups[nama]) {
+      groups[nama] = {
+        nama,
+        items: []
+      }
+    }
+
+    groups[nama].items.push(item)
+  })
+
+  return groups
+})
 </script>

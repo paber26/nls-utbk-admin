@@ -38,23 +38,26 @@
             v-for="(ringkasan, idx) in ringkasanKomponen"
             :key="idx"
             type="button"
-            @click="toggleFilterKomponen(ringkasan.nama.trim())"
+            @click="toggleFilterKomponen(ringkasan.filterKey)"
             :class="[
               'p-4 border rounded-xl flex flex-col items-center justify-center transition relative',
-              isRingkasanSelected(ringkasan.nama)
+              isRingkasanSelected(ringkasan.filterKey)
                 ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                 : 'bg-slate-50 hover:bg-slate-100'
             ]"
           >
             <span
-              :class="['text-3xl font-bold mb-1', isRingkasanSelected(ringkasan.nama) ? 'text-white' : 'text-blue-600']"
+              :class="[
+                'text-3xl font-bold mb-1',
+                isRingkasanSelected(ringkasan.filterKey) ? 'text-white' : 'text-blue-600'
+              ]"
             >
               {{ ringkasan.jumlah }}
             </span>
             <span
               :class="[
                 'text-xs text-center font-medium',
-                isRingkasanSelected(ringkasan.nama) ? 'text-blue-100' : 'text-slate-500'
+                isRingkasanSelected(ringkasan.filterKey) ? 'text-blue-100' : 'text-slate-500'
               ]"
             >
               {{ ringkasan.nama }}
@@ -62,7 +65,7 @@
             <span
               :class="[
                 'text-[10px] mt-1 font-medium px-2 py-0.5 rounded-full border shadow-sm',
-                isRingkasanSelected(ringkasan.nama)
+                isRingkasanSelected(ringkasan.filterKey)
                   ? 'bg-blue-500 border-blue-400 text-white'
                   : 'bg-white text-slate-400 border-slate-100'
               ]"
@@ -71,7 +74,7 @@
             </span>
 
             <span
-              v-if="isRingkasanSelected(ringkasan.nama)"
+              v-if="isRingkasanSelected(ringkasan.filterKey)"
               class="absolute top-2 right-2 text-[10px] bg-white text-blue-600 px-2 py-0.5 rounded-full font-bold shadow-sm"
             >
               ✓
@@ -369,7 +372,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from "vue"
+import { ref, onMounted, nextTick, computed, watch } from "vue"
 import { useRoute, RouterLink } from "vue-router"
 import katex from "katex"
 import renderMathInElement from "katex/contrib/auto-render"
@@ -385,7 +388,40 @@ const bankSoal = ref([])
 const selectedKomponen = ref("")
 
 const normalizeKomponenNama = (nama) => {
-  return (nama || "Tidak Spesifik").toString().trim().toLowerCase()
+  return (nama || "Tidak Spesifik")
+    .toString()
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+}
+
+const getKomponenId = (item) => {
+  const rawId = item?.komponen_id ?? item?.id_komponen ?? item?.komponen?.id ?? item?.komponen?.komponen_id ?? null
+  if (rawId === null || rawId === undefined || rawId === "") return null
+  return String(rawId).trim()
+}
+
+const getKomponenNama = (item) => {
+  const rawNama = item?.komponen_nama ?? item?.nama_komponen ?? item?.komponen?.nama_komponen ?? item?.komponen ?? ""
+  const nama = String(rawNama || "").trim()
+  return nama || "Tidak Spesifik"
+}
+
+const komponenIdByNama = computed(() => {
+  const map = {}
+  ;(tryout.value?.komponen || []).forEach((komponen) => {
+    const namaKey = normalizeKomponenNama(getKomponenNama(komponen))
+    const id = getKomponenId(komponen) || (komponen?.id !== undefined && komponen?.id !== null ? String(komponen.id) : null)
+    if (namaKey && id) map[namaKey] = id
+  })
+  return map
+})
+
+const getKomponenFilterKey = (item) => {
+  const nama = getKomponenNama(item)
+  const namaKey = normalizeKomponenNama(nama)
+  const id = getKomponenId(item) || komponenIdByNama.value[namaKey]
+  return id ? `id:${id}` : `nama:${namaKey}`
 }
 
 const sudahDipakai = (bankSoalId) => {
@@ -395,17 +431,25 @@ const sudahDipakai = (bankSoalId) => {
 const ringkasanKomponen = computed(() => {
   const ringkasan = {}
   soalTryout.value.forEach((soal) => {
-    const nama = (soal.komponen_nama || "Tidak Spesifik").toString().trim()
-    if (!ringkasan[nama]) ringkasan[nama] = { nama, jumlah: 0, durasi: 0 }
-    ringkasan[nama].jumlah++
+    const nama = getKomponenNama(soal)
+    const filterKey = getKomponenFilterKey(soal)
+    if (!ringkasan[filterKey]) ringkasan[filterKey] = { nama, filterKey, jumlah: 0, durasi: 0 }
+    ringkasan[filterKey].jumlah++
   })
 
   if (tryout.value && tryout.value.komponen) {
     tryout.value.komponen.forEach((k) => {
-      if (ringkasan[k.nama_komponen]) {
-        ringkasan[k.nama_komponen].durasi = k.durasi_menit
+      const nama = getKomponenNama(k)
+      const filterKey = getKomponenFilterKey(k)
+      if (ringkasan[filterKey]) {
+        ringkasan[filterKey].durasi = Number(k.durasi_menit) || 0
       } else {
-        ringkasan[k.nama_komponen] = { nama: k.nama_komponen, jumlah: 0, durasi: k.durasi_menit }
+        ringkasan[filterKey] = {
+          nama,
+          filterKey,
+          jumlah: 0,
+          durasi: Number(k.durasi_menit) || 0
+        }
       }
     })
   }
@@ -472,12 +516,19 @@ const loadBankSoal = async () => {
 
 const renderKatex = () => {
   nextTick(() => {
-    renderMathInElement(document.body, {
-      delimiters: [
-        { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false }
-      ],
-      throwOnError: false
+    const containers = document.querySelectorAll(".prose")
+    containers.forEach(container => {
+      try {
+        renderMathInElement(container, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false }
+          ],
+          throwOnError: false
+        })
+      } catch(e) {
+        console.error("KaTeX render error:", e)
+      }
     })
   })
 }
@@ -554,13 +605,13 @@ const updatePoin = async (soal) => {
   }
 }
 
-const isRingkasanSelected = (nama) => {
-  return normalizeKomponenNama(nama) === selectedKomponen.value
+const isRingkasanSelected = (filterKey) => {
+  return filterKey === selectedKomponen.value
 }
 
 const filteredSoalTryout = computed(() => {
   if (!selectedKomponen.value) return soalTryout.value
-  return soalTryout.value.filter((s) => normalizeKomponenNama(s.komponen_nama) === selectedKomponen.value)
+  return soalTryout.value.filter((s) => getKomponenFilterKey(s) === selectedKomponen.value)
 })
 
 const emptyStateText = computed(() => {
@@ -568,18 +619,23 @@ const emptyStateText = computed(() => {
   return "Tidak ada soal untuk komponen yang dipilih"
 })
 
-const toggleFilterKomponen = (nama) => {
-  const normalized = normalizeKomponenNama(nama)
-  if (selectedKomponen.value === normalized) {
+const toggleFilterKomponen = (filterKey) => {
+  if (selectedKomponen.value === filterKey) {
     selectedKomponen.value = ""
   } else {
-    selectedKomponen.value = normalized
+    selectedKomponen.value = filterKey
   }
 }
 
 const resetFilter = () => {
   selectedKomponen.value = ""
 }
+
+watch(ringkasanKomponen, (items) => {
+  if (selectedKomponen.value && !items.some((item) => item.filterKey === selectedKomponen.value)) {
+    selectedKomponen.value = ""
+  }
+})
 
 onMounted(() => {
   loadTryout()
