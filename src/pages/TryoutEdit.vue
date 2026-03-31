@@ -40,21 +40,28 @@
 
               <div>
                 <label class="text-sm text-slate-500">Kategori</label>
-                <div class="w-full mt-1 px-4 py-2 border rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-medium">
+                <div
+                  class="w-full mt-1 px-4 py-2 border rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-medium"
+                >
                   UTBK/SNBT
                 </div>
               </div>
 
               <div class="md:col-span-2">
                 <label class="text-sm text-slate-500 mb-2 block">
-                  Komponen <span class="text-xs text-slate-400 font-normal ml-1">(Pilih sesuai urutan pengerjaan)</span>
+                  Komponen
+                  <span class="text-xs text-slate-400 font-normal ml-1">(Pilih sesuai urutan pengerjaan)</span>
                 </label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div
                     v-for="komponen in komponenList"
                     :key="komponen.id"
                     class="flex items-start gap-3 border p-3 rounded-lg transition-colors"
-                    :class="form.komponen_id.includes(komponen.id) ? 'border-orange-500 bg-orange-50' : 'bg-white border-slate-200 hover:bg-slate-50'"
+                    :class="
+                      form.komponen_id.includes(komponen.id)
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                    "
                   >
                     <input
                       type="checkbox"
@@ -64,11 +71,20 @@
                       class="mt-1 w-4 h-4 text-orange-600 rounded focus:ring-orange-500 cursor-pointer"
                     />
                     <label :for="'komponen-' + komponen.id" class="text-sm text-slate-700 cursor-pointer flex-1">
-                      <span class="font-medium block mb-1">{{ komponen.komponen_nama || komponen.nama_komponen || komponen.nama }}</span>
-                      <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block">{{ komponen.mata_uji || komponen.tingkat }}</span>
+                      <span class="font-medium block mb-1">
+                        {{ komponen.komponen_nama || komponen.nama_komponen || komponen.nama }}
+                      </span>
+                      <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded inline-block">
+                        {{ komponen.mata_uji || komponen.tingkat }}
+                      </span>
                     </label>
-                    <div v-if="form.komponen_id.includes(komponen.id)" class="ml-2 flex flex-col justify-end items-end gap-1">
-                      <div class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold self-end">
+                    <div
+                      v-if="form.komponen_id.includes(komponen.id)"
+                      class="ml-2 flex flex-col justify-end items-end gap-1"
+                    >
+                      <div
+                        class="w-6 h-6 shrink-0 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold self-end"
+                      >
                         {{ form.komponen_id.indexOf(komponen.id) + 1 }}
                       </div>
                       <input
@@ -89,10 +105,10 @@
 
               <div>
                 <label class="text-sm text-slate-500">Durasi (menit)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   :value="totalDurasi"
-                  class="w-full mt-1 px-4 py-2 border rounded-lg bg-slate-50 cursor-not-allowed" 
+                  class="w-full mt-1 px-4 py-2 border rounded-lg bg-slate-50 cursor-not-allowed"
                   readonly
                 />
               </div>
@@ -144,6 +160,28 @@
               <RouterLink to="/tryout" class="px-6 py-3 rounded-lg border hover:bg-slate-100">Batal</RouterLink>
             </section>
           </form>
+        </div>
+
+        <!-- SUCCESS POPUP -->
+        <div v-if="showSuccessPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm text-center">
+            <div class="text-emerald-600 text-3xl mb-2">✓</div>
+            <h3 class="font-semibold text-slate-800 mb-2">Berhasil</h3>
+            <p class="text-sm text-slate-600 mb-4">
+              {{ showSuccessPopup }}
+            </p>
+            <button
+              @click="
+                () => {
+                  showSuccessPopup = ''
+                  router.push('/tryout')
+                }
+              "
+              class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+            >
+              OK
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -247,6 +285,8 @@ const form = ref({
   pesan_selesai: ""
 })
 
+const showSuccessPopup = ref("")
+
 const komponenList = ref([])
 
 const fetchKomponen = async () => {
@@ -275,17 +315,19 @@ onMounted(async () => {
   try {
     const id = route.params.id
     const { data } = await api.get(`/tryout/${id}`)
-    
+
     // Format date for datetime-local input
-    const formatDateTime = (dt) => dt ? new Date(dt).toISOString().slice(0, 16) : ""
+    const formatDateTime = (dt) => (dt ? new Date(dt).toISOString().slice(0, 16) : "")
 
     form.value = {
       paket: data.paket ?? "",
-      komponen_id: data.komponen ? data.komponen.map(k => k.id) : [],
-      durasiPerKomponen: data.komponen ? data.komponen.reduce((acc, k) => {
-        acc[k.id] = k.durasi_menit
-        return acc
-      }, {}) : {},
+      komponen_id: data.komponen ? data.komponen.map((k) => k.id) : [],
+      durasiPerKomponen: data.komponen
+        ? data.komponen.reduce((acc, k) => {
+            acc[k.id] = k.durasi_menit
+            return acc
+          }, {})
+        : {},
       durasi_menit: data.durasi_menit ?? "",
       mulai: formatDateTime(data.mulai),
       selesai: formatDateTime(data.selesai),
@@ -303,7 +345,7 @@ const handleSubmit = async () => {
     const id = route.params.id
     const payload = {
       paket: form.value.paket,
-      komponen: form.value.komponen_id.map(id => ({
+      komponen: form.value.komponen_id.map((id) => ({
         id,
         durasi_menit: Number(form.value.durasiPerKomponen[id]) || 0
       })),
@@ -316,8 +358,7 @@ const handleSubmit = async () => {
     }
 
     const res = await api.put(`/tryout/${id}`, payload)
-    alert(res.data.message || "Batch tryout berhasil diperbarui")
-    router.push("/tryout")
+    showSuccessPopup.value = res.data.message || "Batch tryout berhasil diperbarui"
   } catch (err) {
     console.error("Gagal memperbarui tryout:", err)
     // handle error, e.g. notify user
