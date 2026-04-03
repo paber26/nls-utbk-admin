@@ -17,12 +17,21 @@
       <section class="bg-white rounded-xl border p-6">
         <div class="flex justify-between items-center">
           <h2 class="font-medium">Tambahkan Soal</h2>
-          <button
-            @click="showBankModal = true"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
-          >
-            + Tambahkan Soal
-          </button>
+          <div class="flex gap-2">
+            <button
+              @click="simpanUrutan"
+              :disabled="savingUrutan || loadingSoal"
+              class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {{ savingUrutan ? "Menyimpan..." : "Simpan Urutan" }}
+            </button>
+            <button
+              @click="showBankModal = true"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
+            >
+              + Tambahkan Soal
+            </button>
+          </div>
         </div>
       </section>
 
@@ -460,6 +469,7 @@ const ringkasanKomponen = computed(() => {
 const loadingSoal = ref(true)
 const loadingBank = ref(true)
 const showBankModal = ref(false)
+const savingUrutan = ref(false)
 
 const showDetailModal = ref(false)
 const loadingDetail = ref(false)
@@ -593,6 +603,29 @@ const turunkanUrutan = (soalId) => {
   const temp = soalTryout.value[index]
   soalTryout.value[index] = soalTryout.value[index + 1]
   soalTryout.value[index + 1] = temp
+}
+
+const simpanUrutan = async () => {
+  if (soalTryout.value.length === 0) return
+
+  savingUrutan.value = true
+  try {
+    const payload = soalTryout.value.map((soal, index) => ({
+      banksoal_id: soal.banksoal_id || soal.id,
+      urutan: index + 1
+    }))
+
+    await api.put(`/tryout/${route.params.id}/soal/urutan`, payload)
+
+    // Refresh data soal
+    await loadSoalTryout()
+    alert("Urutan soal berhasil disimpan!")
+  } catch (e) {
+    console.error("Gagal simpan urutan", e)
+    alert("Gagal menyimpan urutan soal")
+  } finally {
+    savingUrutan.value = false
+  }
 }
 
 const updatePoin = async (soal) => {
