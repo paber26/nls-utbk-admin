@@ -228,6 +228,16 @@
               </div>
             </div>
 
+            <div
+              v-if="item.tipe === 'isian'"
+              class="bg-emerald-100 border border-emerald-200 rounded-xl p-4 mb-4"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Kunci Jawaban:</span>
+                <span class="text-sm font-semibold text-emerald-800">{{ item.jawaban }}</span>
+              </div>
+            </div>
+
             <ul v-if="item.tipe === 'pg' || item.tipe === 'pg_majemuk'" class="space-y-2">
               <li
                 v-for="opsi in item.opsi"
