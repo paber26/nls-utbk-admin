@@ -9,7 +9,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Detail Peserta</h1>
-            <p class="text-sm text-slate-500">Informasi lengkap peserta tryout UTBK/SNBT</p>
+            <p class="text-sm text-slate-500">Informasi lengkap peserta tryout SNBT</p>
           </div>
 
           <RouterLink to="/peserta" class="px-4 py-2 rounded-lg border text-sm hover:bg-slate-100">
@@ -74,7 +74,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-medium" :class="peserta?.is_event_registered ? 'text-emerald-700' : 'text-rose-700'">
-                  {{ peserta?.is_event_registered ? "Peserta Aktif pada Program UTBK" : "Peserta Belum Aktif pada Program UTBK" }}
+                  {{ peserta?.is_event_registered ? "Peserta Aktif pada Program SNBT" : "Peserta Belum Aktif pada Program SNBT" }}
                 </p>
                 <p class="text-xs text-slate-500">Mengontrol akses peserta ke batch/program aktif (kolom is_event_registered)</p>
               </div>

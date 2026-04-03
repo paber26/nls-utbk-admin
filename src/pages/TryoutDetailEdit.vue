@@ -9,7 +9,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Edit Batch Tryout</h1>
-            <p class="text-sm text-slate-500">Simulasi Penuh UTBK Batch 01</p>
+            <p class="text-sm text-slate-500">Simulasi Penuh SNBT Batch 01</p>
           </div>
 
           <div class="flex gap-3">
@@ -29,21 +29,21 @@
             <section class="bg-white rounded-xl border p-6 grid md:grid-cols-2 gap-6">
               <div>
                 <label class="text-sm text-slate-500">Nama Batch</label>
-                <input type="text" value="Simulasi Penuh UTBK Batch 01" class="w-full mt-1 px-4 py-2 border rounded-lg" />
+                <input type="text" value="Simulasi Penuh SNBT Batch 01" class="w-full mt-1 px-4 py-2 border rounded-lg" />
               </div>
 
               <div>
                 <label class="text-sm text-slate-500">Kategori</label>
                 <select class="w-full mt-1 px-4 py-2 border rounded-lg">
-                  <option selected>UTBK/SNBT</option>
+                  <option selected>SNBT</option>
                   <option>Simulasi Penuh</option>
-                  <option>Drilling Subtes</option>
+                  <option>Drilling Komponen</option>
                   <option>Diagnostik Batch</option>
                 </select>
               </div>
 
               <div>
-                <label class="text-sm text-slate-500">Subtes</label>
+                <label class="text-sm text-slate-500">Komponen</label>
                 <select class="w-full mt-1 px-4 py-2 border rounded-lg">
                   <option selected>Penalaran Matematika</option>
                   <option>TPS</option>

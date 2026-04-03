@@ -5,7 +5,7 @@
         <div class="w-12 h-12 border-4 border-[#1D546D] border-t-transparent rounded-full animate-spin"></div>
       </div>
       <h2 class="text-xl font-semibold text-slate-800 mb-2">Sedang Menyiapkan Panel</h2>
-      <p class="text-slate-500 text-sm">Mohon tunggu sebentar, akun admin UTBK Anda sedang diverifikasi.</p>
+      <p class="text-slate-500 text-sm">Mohon tunggu sebentar, akun admin SNBT Anda sedang diverifikasi.</p>
     </div>
   </div>
 </template>

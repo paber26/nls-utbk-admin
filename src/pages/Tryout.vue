@@ -6,7 +6,7 @@
       <div class="flex justify-between items-center mb-6">
         <div>
           <h1 class="text-lg font-semibold">Manajemen Tryout</h1>
-          <p class="text-sm text-slate-500">Kelola batch simulasi penuh, paket subtes, dan tryout diagnostik UTBK</p>
+          <p class="text-sm text-slate-500">Kelola batch simulasi penuh, paket komponen, dan tryout diagnostik SNBT</p>
         </div>
 
         <RouterLink

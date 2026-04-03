@@ -7,7 +7,7 @@
       <main class="flex-1">
         <header class="bg-white border-b px-6 py-4">
           <h1 class="text-lg font-semibold text-slate-800">Data Sekolah</h1>
-          <p class="text-sm text-slate-500">Daftar sekolah dan statistik peserta tryout UTBK/SNBT</p>
+          <p class="text-sm text-slate-500">Daftar sekolah dan statistik peserta tryout SNBT</p>
         </header>
 
         <!-- CONTENT -->

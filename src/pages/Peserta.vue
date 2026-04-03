@@ -7,7 +7,7 @@
       <main class="flex-1">
         <header class="bg-white border-b px-6 py-4">
           <h1 class="text-lg font-semibold text-slate-800">Manajemen Peserta</h1>
-          <p class="text-sm text-slate-500">Daftar seluruh peserta yang terdaftar pada platform tryout UTBK/SNBT</p>
+          <p class="text-sm text-slate-500">Daftar seluruh peserta yang terdaftar pada platform tryout SNBT</p>
         </header>
 
         <!-- Content -->

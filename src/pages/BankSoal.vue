@@ -9,7 +9,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Manajemen Paket Soal</h1>
-            <p class="text-sm text-slate-500">Kelola bank soal berdasarkan komponen dan kategori tryout UTBK/SNBT</p>
+            <p class="text-sm text-slate-500">Kelola bank soal berdasarkan komponen dan kategori tryout SNBT</p>
           </div>
 
           <RouterLink

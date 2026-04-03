@@ -43,7 +43,7 @@
                 <div
                   class="w-full mt-1 px-4 py-2 border rounded-lg bg-orange-50 text-orange-700 border border-orange-200 font-medium"
                 >
-                  UTBK/SNBT
+                  SNBT
                 </div>
               </div>
 

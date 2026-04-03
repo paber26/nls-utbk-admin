@@ -9,7 +9,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Buat Batch Tryout</h1>
-            <p class="text-sm text-slate-500">Konfigurasi awal simulasi UTBK sebelum paket soal ditambahkan</p>
+            <p class="text-sm text-slate-500">Konfigurasi awal simulasi SNBT sebelum paket soal ditambahkan</p>
           </div>
 
           <RouterLink to="/tryout" class="px-4 py-2 rounded-lg border text-sm hover:bg-slate-100">← Kembali</RouterLink>
@@ -24,7 +24,7 @@
                 <input
                   type="text"
                   class="w-full mt-1 px-4 py-2 border rounded-lg"
-                  placeholder="Contoh: Simulasi Penuh UTBK Batch 01"
+                  placeholder="Contoh: Simulasi Penuh SNBT Batch 01"
                   v-model="form.paket"
                 />
                 <p v-if="errors.paket" class="text-xs text-red-500 mt-1">
@@ -35,7 +35,7 @@
               <div>
                 <label class="text-sm text-slate-500">Kategori</label>
                 <div class="w-full mt-1 px-4 py-2 border rounded-lg bg-orange-50 text-orange-700 border border-orange-200">
-                  UTBK/SNBT
+                  SNBT
                 </div>
               </div>
 

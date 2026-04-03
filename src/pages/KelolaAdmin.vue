@@ -8,7 +8,7 @@
         <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h1 class="text-lg font-semibold text-slate-800">Kelola Tim Admin</h1>
-            <p class="text-sm text-slate-500">Atur role peserta dan admin untuk operasional panel UTBK</p>
+            <p class="text-sm text-slate-500">Atur role peserta dan admin untuk operasional panel SNBT</p>
           </div>
 
           <div class="text-right text-sm">

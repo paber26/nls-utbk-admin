@@ -6,7 +6,7 @@
                 Lengkapi Data Peserta
             </h1>
             <p class="text-sm text-slate-500 mb-8">
-                Data ini dipakai untuk kebutuhan batch tryout UTBK, analisis skor, dan pemeringkatan peserta.
+                Data ini dipakai untuk kebutuhan batch tryout SNBT, analisis skor, dan pemeringkatan peserta.
             </p>
 
             <form onsubmit="showDashboard(event)" class="space-y-6">
@@ -46,7 +46,7 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-medium">Fokus Subtes</label>
+                    <label class="text-sm font-medium">Fokus Komponen</label>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" /> TPS

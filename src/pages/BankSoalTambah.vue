@@ -7,7 +7,7 @@
         <!-- Header -->
         <header class="bg-white border-b px-6 py-4">
           <h1 class="text-lg font-semibold text-slate-800">Tambah Soal</h1>
-          <p class="text-sm text-slate-500">Tambahkan soal baru ke bank soal UTBK/SNBT</p>
+          <p class="text-sm text-slate-500">Tambahkan soal baru ke bank soal SNBT</p>
         </header>
 
         <!-- Form -->

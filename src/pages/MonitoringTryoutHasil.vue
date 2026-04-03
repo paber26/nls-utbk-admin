@@ -6,7 +6,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 class="text-lg font-semibold">Hasil Pengerjaan Peserta</h1>
-          <p class="text-sm text-slate-500">Detail jawaban peserta pada batch tryout UTBK</p>
+          <p class="text-sm text-slate-500">Detail jawaban peserta pada batch tryout SNBT</p>
           <p class="text-sm text-slate-700 mt-1">
             Batch:
             <span class="font-semibold">{{ tryoutName || "-" }}</span>

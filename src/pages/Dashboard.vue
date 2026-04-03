@@ -6,7 +6,7 @@
       <main class="flex-1">
         <header class="bg-white border-b px-6 py-4">
           <h1 class="text-lg font-semibold text-slate-800">Dashboard Admin</h1>
-          <p class="text-sm text-slate-500">Ringkasan operasional platform tryout UTBK/SNBT</p>
+          <p class="text-sm text-slate-500">Ringkasan operasional platform tryout SNBT</p>
         </header>
 
         <div class="px-6 py-6 space-y-6">
@@ -14,12 +14,12 @@
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.14),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(95,149,152,0.22),_transparent_34%)]"></div>
             <div class="relative px-8 py-8 md:px-10 md:py-10 grid lg:grid-cols-[1.5fr_1fr] gap-8 items-center">
               <div>
-                <p class="text-sm uppercase tracking-[0.3em] text-[#c8dbdc]">Next Level Study UTBK</p>
+                <p class="text-sm uppercase tracking-[0.3em] text-[#c8dbdc]">Next Level Study SNBT</p>
                 <h2 class="mt-3 text-3xl md:text-4xl font-bold leading-tight">
                   Kendalikan batch tryout, paket soal, dan analisis peserta dari satu panel admin.
                 </h2>
                 <p class="mt-4 max-w-2xl text-slate-300 leading-relaxed">
-                  Fokus pada simulasi penuh, distribusi subtes, dan pemeringkatan peserta supaya operasional SNBT tetap
+                  Fokus pada simulasi penuh, distribusi komponen, dan pemeringkatan peserta supaya operasional SNBT tetap
                   rapi dari persiapan hingga evaluasi hasil.
                 </p>
 
@@ -41,7 +41,7 @@
 
               <div class="grid gap-4">
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur">
-                  <p class="text-sm text-white/80">Subtes prioritas</p>
+                  <p class="text-sm text-white/80">Komponen prioritas</p>
                   <p class="mt-2 text-2xl font-bold">TPS • Literasi • PM</p>
                   <p class="mt-2 text-sm text-white/65">
                     Gunakan data dashboard untuk melihat batch dan partisipasi paling aktif.
@@ -154,7 +154,7 @@
                   <tr>
                     <th class="px-4 py-3 text-left">No</th>
                     <th class="px-4 py-3 text-left">Batch</th>
-                    <th class="px-4 py-3 text-left">Subtes / Kategori</th>
+                    <th class="px-4 py-3 text-left">Komponen / Kategori</th>
                     <th class="px-4 py-3 text-center">Mulai</th>
                     <th class="px-4 py-3 text-center">Selesai</th>
                     <th class="px-4 py-3 text-center">Status</th>
@@ -167,7 +167,7 @@
                   <tr v-for="(item, index) in recentTryouts" :key="item.id" class="border-t">
                     <td class="px-4 py-3">{{ index + 1 }}</td>
                     <td class="px-4 py-3 font-medium">{{ item.paket || "-" }}</td>
-                    <td class="px-4 py-3">{{ getSubtestLabel(item) }}</td>
+                    <td class="px-4 py-3">{{ getKomponenLabel(item) }}</td>
                     <td class="px-4 py-3 text-center">{{ formatDate(item.mulai) }}</td>
                     <td class="px-4 py-3 text-center">{{ formatDate(item.selesai) }}</td>
                     <td class="px-4 py-3 text-center">
@@ -221,7 +221,7 @@ const formatDate = (datetime) => {
 }
 
 const toArray = (data) => (Array.isArray(data) ? data : [])
-const getSubtestLabel = (item) => item?.mapel || item?.mapel_nama || item?.subtes || item?.kategori || "-"
+const getKomponenLabel = (item) => item?.mapel || item?.mapel_nama || item?.komponen || item?.subtes || item?.kategori || "-"
 
 const totalTryout = computed(() => tryouts.value.length)
 const totalTryoutAktif = computed(() => tryouts.value.filter((item) => item.status === "active").length)

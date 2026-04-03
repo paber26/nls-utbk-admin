@@ -6,13 +6,13 @@
       <main class="flex-1">
         <header class="bg-white border-b px-4 md:px-6 py-4">
           <h1 class="text-lg font-semibold text-slate-800">Hasil Simulasi</h1>
-          <p class="text-sm text-slate-500">Ringkasan hasil pengerjaan simulasi UTBK</p>
+          <p class="text-sm text-slate-500">Ringkasan hasil pengerjaan simulasi SNBT</p>
         </header>
 
         <div class="px-4 md:px-6 py-6 w-full">
           <section class="bg-white rounded-xl border p-6 mb-6">
-            <span class="inline-block text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded mb-2">UTBK/SNBT</span>
-            <h2 class="text-xl font-semibold text-slate-800">Simulasi Penuh UTBK</h2>
+            <span class="inline-block text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded mb-2">SNBT</span>
+            <h2 class="text-xl font-semibold text-slate-800">Simulasi Penuh SNBT</h2>
             <p class="text-sm text-slate-500">Waktu: 195 menit • Jumlah soal: 160</p>
           </section>
 

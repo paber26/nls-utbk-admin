@@ -4,7 +4,7 @@
       <div class="mb-6">
         <img src="/nls-logo-300.png" alt="Next Level Study" class="w-24 mx-auto mb-4" />
         <p class="text-xs uppercase tracking-[0.3em] text-[#1D546D]/70">Admin Panel</p>
-        <h1 class="text-2xl font-bold text-slate-800 mt-2">Login Admin UTBK/SNBT</h1>
+        <h1 class="text-2xl font-bold text-slate-800 mt-2">Login Admin SNBT</h1>
         <p class="text-sm text-slate-500 mt-2">Masuk untuk mengelola batch tryout, paket soal, peserta, dan leaderboard.</p>
       </div>
 

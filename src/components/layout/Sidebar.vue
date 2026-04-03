@@ -2,7 +2,7 @@
   <aside class="w-72 bg-sidebar text-slate-200 flex flex-col">
     <div class="px-6 py-5 border-b border-white/10">
       <p class="text-xs uppercase tracking-[0.32em] text-[#9fc1c3]/70">Next Level Study</p>
-      <p class="text-lg font-semibold text-white mt-1">Admin UTBK</p>
+      <p class="text-lg font-semibold text-white mt-1">Admin SNBT</p>
       <p class="text-xs text-[#9fc1c3]/70 mt-1">Control panel batch tryout SNBT</p>
     </div>
 
