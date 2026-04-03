@@ -170,9 +170,22 @@
                   <option :value="true">Benar</option>
                   <option :value="false">Salah</option>
                 </select>
+
+                <button
+                  type="button"
+                  @click="hapusPernyataan(index)"
+                  class="text-red-500 text-xs border p-2 rounded-lg"
+                  v-if="pernyataanKompleks.length > 2"
+                >
+                  Hapus
+                </button>
               </div>
 
-              <p class="text-xs text-slate-500 mt-2">Skor otomatis: 4 benar = 1 poin, 3 benar = 0.6, 2 benar = 0.2</p>
+              <button type="button" @click="tambahPernyataan" class="mt-2 px-4 py-2 border rounded-lg text-sm bg-white">
+                ➕ Tambah Pernyataan
+              </button>
+
+              <p class="text-xs text-slate-500 mt-2">Minimal 2 pernyataan harus diisi.</p>
             </div>
 
             <div>
@@ -340,8 +353,6 @@ const opsiJawaban = ref([
 ])
 const pernyataanKompleks = ref([
   { text: "", jawaban: true },
-  { text: "", jawaban: true },
-  { text: "", jawaban: true },
   { text: "", jawaban: true }
 ])
 const draftSoal = ref([])
@@ -352,6 +363,14 @@ const tambahOpsi = () => {
 
 const hapusOpsi = (index) => {
   opsiJawaban.value.splice(index, 1)
+}
+
+const tambahPernyataan = () => {
+  pernyataanKompleks.value.push({ text: "", jawaban: true })
+}
+
+const hapusPernyataan = (index) => {
+  pernyataanKompleks.value.splice(index, 1)
 }
 
 const setJawabanBenar = (index) => {
@@ -471,6 +490,11 @@ const submitSoal = async () => {
   }
 
   if (tipeSoal.value === "pg_kompleks") {
+    if (pernyataanKompleks.value.length < 2) {
+      openPopup("Minimal harus ada 2 pernyataan")
+      return
+    }
+
     const kosong = pernyataanKompleks.value.some((p) => !p.text.trim())
     if (kosong) {
       openPopup("Semua pernyataan wajib diisi")

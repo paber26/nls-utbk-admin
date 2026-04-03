@@ -109,7 +109,20 @@
               <option :value="true">Benar</option>
               <option :value="false">Salah</option>
             </select>
+
+            <button
+              type="button"
+              class="text-red-500 text-xs border p-2 rounded-lg bg-white"
+              @click="hapusPernyataan(index)"
+              v-if="pernyataanKompleks.length > 2"
+            >
+              Hapus
+            </button>
           </div>
+
+          <button type="button" class="mt-2 px-4 py-2 border rounded-lg text-sm bg-white" @click="tambahPernyataan">
+            + Tambah Pernyataan
+          </button>
         </div>
 
         <div>
@@ -194,8 +207,6 @@ const jawabanIsian = ref("")
 const opsiJawaban = ref([])
 const generateKey = () => `${Date.now()}-${Math.random()}`
 const pernyataanKompleks = ref([
-  { text: "", jawaban: true },
-  { text: "", jawaban: true },
   { text: "", jawaban: true },
   { text: "", jawaban: true }
 ])
@@ -330,6 +341,17 @@ const hapusOpsi = (index) => {
   }
 }
 
+const tambahPernyataan = () => {
+  pernyataanKompleks.value.push({
+    text: "",
+    jawaban: true
+  })
+}
+
+const hapusPernyataan = (index) => {
+  pernyataanKompleks.value.splice(index, 1)
+}
+
 onMounted(async () => {
   // load komponen
   const komponenRes = await api.get("/komponen")
@@ -426,8 +448,8 @@ const submitEdit = async () => {
   }
 
   if (tipeSoal.value === "pg_kompleks") {
-    if (!pernyataanKompleks.value.length) {
-      errorMessage.value = "Minimal harus ada 1 pernyataan"
+    if (pernyataanKompleks.value.length < 2) {
+      errorMessage.value = "Minimal harus ada 2 pernyataan"
       showErrorPopup.value = true
       return
     }
