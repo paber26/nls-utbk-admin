@@ -133,16 +133,18 @@
                 <span class="ml-2">{{ getNomorUrut(soal.id) }}</span>
               </td>
               <td class="px-3 py-2">
-                <p class="text-gray-800 leading-relaxed">{{ (soal.pertanyaan || "").substring(0, 100) }}...</p>
+                <div class="prose prose-sm max-w-none text-gray-800 leading-relaxed mb-4">
+                  <div v-html="(soal.pertanyaan || '').substring(0, 150) + '...'"></div>
+                </div>
                 <div v-if="soal.tipe === 'pg' && soal.opsi_jawaban && soal.opsi_jawaban.length" class="mt-4 space-y-2">
                   <div v-for="(opsi, i) in soal.opsi_jawaban" :key="i" class="flex items-start gap-3">
                     <span class="w-6 text-right font-medium text-gray-700">{{ String.fromCharCode(65 + i) }}.</span>
                     <div
-                      class="flex-1 text-gray-800 leading-relaxed"
-                      :class="opsi.is_correct ? 'text-emerald-600 font-medium' : ''"
+                      class="flex-1 prose prose-sm max-w-none text-gray-800 leading-relaxed font-normal"
+                      :class="opsi.is_correct ? 'text-emerald-600 font-semibold' : ''"
                       v-html="opsi.text"
                     ></div>
-                    <span class="text-xs text-gray-400 whitespace-nowrap">
+                    <span class="text-[10px] text-gray-400 whitespace-nowrap bg-gray-50 px-1.5 py-0.5 rounded border">
                       {{ opsi.poin?.toFixed(2) || "0.00" }} poin
                     </span>
                   </div>

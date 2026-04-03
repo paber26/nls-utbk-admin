@@ -217,8 +217,8 @@
               class="space-y-2 text-sm mb-4"
             >
               <div v-for="p in item.pernyataan" :key="p.urutan" class="flex items-start gap-2">
-                <span class="font-medium">{{ p.urutan }}.</span>
-                <span v-html="p.teks"></span>
+                <span class="font-medium shrink-0">{{ p.urutan }}.</span>
+                <div class="flex-1 prose prose-sm max-w-none text-slate-800" v-html="p.teks"></div>
                 <span
                   class="ml-auto text-xs px-2 py-0.5 rounded"
                   :class="p.jawaban_benar ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
