@@ -207,7 +207,13 @@ import {
   ImageToolbar,
   ImageStyle,
   ImageUpload,
-  ImageResize
+  ImageResize,
+  Table,
+  TableToolbar,
+  TableProperties,
+  TableCellProperties,
+  TableCaption,
+  TableColumnResize
 } from "ckeditor5"
 
 const route = useRoute()
@@ -249,9 +255,18 @@ const editorConfig = {
     ImageToolbar,
     ImageStyle,
     ImageUpload,
-    ImageResize
+    ImageResize,
+    Table,
+    TableToolbar,
+    TableProperties,
+    TableCellProperties,
+    TableCaption,
+    TableColumnResize
   ],
-  toolbar: ["undo", "redo", "|", "bold", "italic", "link", "bulletedList", "numberedList", "|", "uploadImage"],
+  toolbar: ["undo", "redo", "|", "bold", "italic", "link", "bulletedList", "numberedList", "|", "insertTable", "|", "uploadImage"],
+  table: {
+    contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "tableProperties", "tableCellProperties"]
+  },
   image: {
     toolbar: ["imageStyle:alignLeft", "imageStyle:alignCenter", "imageStyle:alignRight", "|", "resizeImage"],
     resizeOptions: [

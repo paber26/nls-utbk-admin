@@ -168,7 +168,13 @@ import {
   Image,
   ImageToolbar,
   ImageResize,
-  ImageUpload
+  ImageUpload,
+  Table,
+  TableToolbar,
+  TableProperties,
+  TableCellProperties,
+  TableCaption,
+  TableColumnResize
 } from "ckeditor5"
 import { ref, onMounted, onUnmounted, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router"
@@ -238,7 +244,25 @@ function MyCustomUploadAdapterPlugin(editor) {
 
 const editorConfig = {
   licenseKey: "GPL",
-  plugins: [Essentials, Paragraph, Bold, Italic, Underline, Link, List, Image, ImageToolbar, ImageResize, ImageUpload],
+  plugins: [
+    Essentials,
+    Paragraph,
+    Bold,
+    Italic,
+    Underline,
+    Link,
+    List,
+    Image,
+    ImageToolbar,
+    ImageResize,
+    ImageUpload,
+    Table,
+    TableToolbar,
+    TableProperties,
+    TableCellProperties,
+    TableCaption,
+    TableColumnResize
+  ],
   extraPlugins: [MyCustomUploadAdapterPlugin],
   toolbar: [
     "undo",
@@ -253,8 +277,13 @@ const editorConfig = {
     "bulletedList",
     "numberedList",
     "|",
+    "insertTable",
+    "|",
     "imageUpload"
   ],
+  table: {
+    contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "tableProperties", "tableCellProperties"]
+  },
   image: {
     resizeOptions: [
       {
